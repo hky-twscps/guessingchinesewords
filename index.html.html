@@ -1,0 +1,943 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>方塊語文大冒險：詞意推斷大師</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts for Pixel/Game aesthetics and readable Chinese font -->
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Noto+Sans+TC:wght@400;700;900&display=swap" rel="stylesheet">
+    
+    <style>
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            background-color: #1d1d1d;
+            background-image: radial-gradient(#2d2d2d 1px, transparent 0);
+            background-size: 16px 16px;
+            color: #ffffff;
+            user-select: none;
+        }
+
+        .pixel-font {
+            font-family: 'Press Start 2P', 'Noto Sans TC', cursive;
+        }
+
+        /* Minecraft Style Borders & Shadows */
+        .mc-border {
+            border: 4px solid #000;
+            box-shadow: inset -4px -4px 0px rgba(0,0,0,0.4), inset 4px 4px 0px rgba(255,255,255,0.3);
+        }
+
+        .mc-button {
+            border: 4px solid #000;
+            box-shadow: inset -4px -4px 0px rgba(0,0,0,0.4), inset 4px 4px 0px rgba(255,255,255,0.3);
+            transition: transform 0.05s ease, background-color 0.1s ease;
+        }
+
+        .mc-button:hover {
+            filter: brightness(1.1);
+        }
+
+        .mc-button:active {
+            transform: translateY(2px);
+            box-shadow: inset 4px 4px 0px rgba(0,0,0,0.6), inset -2px -2px 0px rgba(255,255,255,0.1);
+        }
+
+        /* Minecraft Theme Color Classes */
+        .bg-dirt { background-color: #573d26; }
+        .bg-grass { background-color: #4a7023; }
+        .bg-wood { background-color: #835432; }
+        .bg-iron { background-color: #8a8a8a; }
+        .bg-diamond { background-color: #2ca89b; }
+
+        /* Custom Animated Block Breaking Effect */
+        @keyframes blockBreak {
+            0% { transform: scale(1) rotate(0deg); opacity: 1; }
+            50% { transform: scale(1.15) rotate(5deg); opacity: 0.8; }
+            100% { transform: scale(1) rotate(0deg); opacity: 1; }
+        }
+
+        .mine-animation {
+            animation: blockBreak 0.35s ease-in-out;
+        }
+
+        /* Particle Text Floating Animation */
+        @keyframes floatUp {
+            0% { opacity: 1; transform: translateY(0) scale(1); }
+            100% { opacity: 0; transform: translateY(-40px) scale(1.2); }
+        }
+
+        .floating-xp {
+            animation: floatUp 0.8s ease-out forwards;
+        }
+
+        /* Target Highlight Pill */
+        .target-word {
+            background-color: #facc15;
+            color: #000;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-weight: 900;
+            border: 2px solid #000;
+            display: inline-block;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between items-center p-2 md:p-4">
+
+    <!-- Header / Banner -->
+    <header class="w-full max-w-4xl bg-dirt border-4 border-black p-3 mb-4 rounded-lg flex justify-between items-center mc-border">
+        <div class="flex items-center space-x-3">
+            <div class="w-10 h-10 bg-grass border-2 border-black flex items-center justify-center font-bold text-xl shadow">
+                📖
+            </div>
+            <div>
+                <h1 class="text-lg md:text-2xl font-black text-yellow-300 tracking-wider">方塊語文大冒險</h1>
+                <p class="text-xs md:text-sm text-gray-300">閱讀策略：透過上文下理推斷詞意</p>
+            </div>
+        </div>
+        <button id="audio-toggle" class="mc-button bg-gray-700 px-3 py-1 text-xs md:text-sm rounded font-bold">
+            🔊 音效: 開
+        </button>
+    </header>
+
+    <!-- Main Content Box -->
+    <main class="w-full max-w-4xl bg-gray-800 border-4 border-black rounded-lg p-4 md:p-6 mc-border relative flex-grow flex flex-col justify-center">
+
+        <!-- VIEW 1: LOGIN / NAME INPUT -->
+        <section id="view-login" class="space-y-6 text-center py-6">
+            <div class="space-y-2">
+                <span class="text-5xl">⛏️</span>
+                <h2 class="text-2xl md:text-3xl font-black text-green-400">歡迎來到語文冒險世界！</h2>
+                <p class="text-gray-300 text-sm md:text-base max-w-md mx-auto">
+                    準備好挑戰你的閱讀推理能力了嗎？運用文章中的「上文下理」尋找線索，挖開方塊獲取最高榮譽！
+                </p>
+            </div>
+
+            <div class="max-w-xs mx-auto space-y-4">
+                <div class="text-left">
+                    <label for="player-name" class="block text-xs font-bold text-yellow-300 mb-1">請輸入冒險者名字：</label>
+                    <input type="text" id="player-name" placeholder="例如：小明" maxlength="10"
+                        class="w-full px-4 py-3 bg-gray-900 border-4 border-black text-white rounded font-bold text-lg focus:outline-none focus:border-yellow-400">
+                </div>
+                <button id="btn-start" class="w-full mc-button bg-green-600 hover:bg-green-500 py-3 text-lg font-black text-white rounded">
+                    開始冒險 🚀
+                </button>
+            </div>
+        </section>
+
+        <!-- VIEW 2: DIFFICULTY SELECTION -->
+        <section id="view-difficulty" class="hidden space-y-6 text-center py-4">
+            <h2 class="text-2xl font-black text-yellow-300">選擇你的冒險階梯等級</h2>
+            <p class="text-xs md:text-sm text-gray-300">選擇適合你的能力難度，完成 8 道挑戰題目：</p>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <!-- Easy Level -->
+                <button class="btn-select-level mc-button bg-dirt hover:bg-amber-800 p-4 rounded text-left flex flex-col justify-between h-44" data-level="easy">
+                    <div>
+                        <div class="flex justify-between items-center mb-2">
+                            <span class="text-xl font-bold text-amber-300">泥土階梯</span>
+                            <span class="text-2xl">🟫</span>
+                        </div>
+                        <p class="text-xs text-amber-100">初級能力：較直觀的語境線索，建立自信基石。</p>
+                    </div>
+                    <div class="text-xs bg-black bg-opacity-40 p-2 rounded text-amber-200 mt-2">
+                        目標詞：草率、湛藍、幽靜、喘吁吁等
+                    </div>
+                </button>
+
+                <!-- Medium Level -->
+                <button class="btn-select-level mc-button bg-iron hover:bg-gray-500 p-4 rounded text-left flex flex-col justify-between h-44" data-level="medium">
+                    <div>
+                        <div class="flex justify-between items-center mb-2">
+                            <span class="text-xl font-bold text-gray-100">鐵礦階梯</span>
+                            <span class="text-2xl">🩶</span>
+                        </div>
+                        <p class="text-xs text-gray-200">中級能力：包含成語與延伸語意，考驗細致觀察。</p>
+                    </div>
+                    <div class="text-xs bg-black bg-opacity-40 p-2 rounded text-gray-300 mt-2">
+                        目標詞：煥然一新、精湛、扣人心弦等
+                    </div>
+                </button>
+
+                <!-- Hard Level -->
+                <button class="btn-select-level mc-button bg-diamond hover:bg-teal-600 p-4 rounded text-left flex flex-col justify-between h-44" data-level="hard">
+                    <div>
+                        <div class="flex justify-between items-center mb-2">
+                            <span class="text-xl font-bold text-cyan-200">鑽石階梯</span>
+                            <span class="text-2xl">💎</span>
+                        </div>
+                        <p class="text-xs text-cyan-100">高級能力：長句與深層邏輯推斷，挑戰思維極限！</p>
+                    </div>
+                    <div class="text-xs bg-black bg-opacity-40 p-2 rounded text-cyan-200 mt-2">
+                        目標詞：百折不撓、各抒己見、蛛絲馬跡等
+                    </div>
+                </button>
+            </div>
+        </section>
+
+        <!-- VIEW 3: GAMEPLAY INTERFACE -->
+        <section id="view-game" class="hidden space-y-4 relative">
+            <!-- Game HUD Top Bar -->
+            <div class="flex justify-between items-center bg-gray-900 p-3 rounded border-2 border-black">
+                <div class="flex items-center space-x-2">
+                    <span id="current-player-display" class="font-bold text-yellow-300 text-sm md:text-base">玩家</span>
+                    <span id="current-level-badge" class="px-2 py-0.5 text-xs font-black rounded bg-amber-700 text-white">初級</span>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <div class="text-xs md:text-sm">
+                        ⏱️ 時間: <span id="timer-display" class="font-mono text-green-400 font-bold">00:00</span>
+                    </div>
+                    <div class="text-xs md:text-sm">
+                        ⭐ 得分: <span id="score-display" class="font-mono text-yellow-400 font-bold">0</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Progress & Ore Block Container -->
+            <div class="bg-gray-900 border-2 border-black p-3 rounded flex flex-col md:flex-row items-center justify-between gap-4">
+                <!-- Ore Block Interactive Graphic -->
+                <div class="flex items-center space-x-3">
+                    <div id="ore-block" class="w-16 h-16 bg-dirt border-4 border-black rounded flex items-center justify-center text-3xl shadow-lg relative transition-transform">
+                        ⛏️
+                    </div>
+                    <div>
+                        <div class="text-xs text-gray-400">目前採礦進度</div>
+                        <div class="text-sm font-bold text-white">第 <span id="q-index-num">1</span> / 8 個方塊</div>
+                    </div>
+                </div>
+
+                <!-- XP Bar Style Progress -->
+                <div class="w-full md:w-2/3 space-y-1">
+                    <div class="flex justify-between text-xs text-gray-300 font-bold">
+                        <span>經驗值進度 (XP)</span>
+                        <span id="progress-percent">0%</span>
+                    </div>
+                    <div class="w-full bg-gray-950 h-5 border-2 border-black rounded-full overflow-hidden p-0.5">
+                        <div id="xp-bar" class="bg-green-500 h-full rounded-full transition-all duration-300" style="width: 0%;"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Question Box -->
+            <div class="bg-gray-900 border-4 border-black p-4 md:p-5 rounded-lg space-y-3 relative">
+                <div class="text-xs font-bold text-yellow-400 tracking-wider">閱讀文章段落（請結合上文下理推斷）：</div>
+                <div id="question-context" class="text-base md:text-lg leading-relaxed text-gray-100 bg-gray-950 p-3 rounded border border-gray-700">
+                    <!-- Context Text dynamically injected -->
+                </div>
+                <div class="text-sm font-bold text-green-300 pt-1">
+                    ❓ 問題：文中標示的 <span id="target-word-display" class="text-yellow-300 font-extrabold underline">【】</span> 最可能是什麼意思？
+                </div>
+            </div>
+
+            <!-- Floating XP Text Container -->
+            <div id="floating-xp-container" class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none z-30"></div>
+
+            <!-- Options Grid -->
+            <div id="options-grid" class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <!-- Options buttons dynamically generated -->
+            </div>
+
+            <!-- Feedback / Reasoning Modal Dialog -->
+            <div id="feedback-modal" class="hidden fixed inset-0 bg-black bg-opacity-70 z-50 flex items-center justify-center p-4">
+                <div class="bg-gray-800 border-4 border-black p-5 rounded-lg max-w-lg w-full space-y-4 mc-border">
+                    <div id="feedback-header" class="text-xl font-black flex items-center space-x-2">
+                        <!-- Icon and Title -->
+                    </div>
+                    
+                    <div class="bg-gray-900 p-4 rounded border border-gray-700 space-y-2">
+                        <div class="text-xs font-bold text-yellow-300">💡 上文下理線索解析（閱讀策略）：</div>
+                        <p id="feedback-explanation" class="text-sm text-gray-200 leading-relaxed"></p>
+                    </div>
+
+                    <button id="btn-next-question" class="w-full mc-button bg-green-600 hover:bg-green-500 py-3 font-bold text-white rounded">
+                        下一題 (繼續採礦) ➡️
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- VIEW 4: RESULT & LEADERBOARD -->
+        <section id="view-result" class="hidden space-y-6 py-4">
+            <div class="text-center space-y-2">
+                <span class="text-5xl">🏆</span>
+                <h2 class="text-3xl font-black text-yellow-300">冒險完成！獲得寶藏！</h2>
+                <p class="text-gray-300 text-sm">恭喜你完成了 8 個方塊的閱讀策略考驗！</p>
+            </div>
+
+            <!-- Stats Overview Card -->
+            <div class="bg-gray-900 border-4 border-black p-4 rounded-lg grid grid-cols-3 gap-2 text-center">
+                <div>
+                    <div class="text-xs text-gray-400">難度階梯</div>
+                    <div id="res-level" class="text-base font-bold text-cyan-300">初級</div>
+                </div>
+                <div>
+                    <div class="text-xs text-gray-400">總得分</div>
+                    <div id="res-score" class="text-xl font-black text-yellow-400">0</div>
+                </div>
+                <div>
+                    <div class="text-xs text-gray-400">總用時</div>
+                    <div id="res-time" class="text-base font-bold text-green-400">00:00</div>
+                </div>
+            </div>
+
+            <!-- Leaderboard Box -->
+            <div class="bg-gray-900 border-4 border-black p-4 rounded-lg space-y-3">
+                <div class="flex justify-between items-center border-b border-gray-700 pb-2">
+                    <h3 class="text-lg font-bold text-yellow-300 flex items-center space-x-2">
+                        <span>📜 冒險龍虎榜 (Top 5)</span>
+                    </h3>
+                    <span class="text-xs text-gray-400">同一連結全服排行</span>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full text-xs md:text-sm text-left">
+                        <thead class="bg-gray-800 text-gray-300 uppercase font-mono">
+                            <tr>
+                                <th class="p-2">名次</th>
+                                <th class="p-2">玩家</th>
+                                <th class="p-2">等級</th>
+                                <th class="p-2">分數</th>
+                                <th class="p-2">耗時</th>
+                            </tr>
+                        </thead>
+                        <tbody id="leaderboard-body" class="divide-y divide-gray-800">
+                            <tr>
+                                <td colspan="5" class="p-4 text-center text-gray-500">正在載入龍虎榜數據...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <button id="btn-restart" class="w-full mc-button bg-blue-600 hover:bg-blue-500 py-3 text-lg font-black text-white rounded">
+                🔄 再次挑戰 / 更換難度
+            </button>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="w-full max-w-4xl text-center text-xs text-gray-500 my-3">
+        方塊語文大冒險 &copy; 2026 小學四年級中文科閱讀策略遊戲 | 透過上文下理推斷詞意
+    </footer>
+
+    <!-- Firebase Standard Scripts -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // Global variables injected by environment or fallback
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'minecraft-chinese-read-g4';
+        const firebaseConfig = typeof __firebase_config !== 'undefined' 
+            ? JSON.parse(__firebase_config) 
+            : {
+                apiKey: "demo-api-key",
+                authDomain: "demo-project.firebaseapp.com",
+                projectId: "demo-project",
+                storageBucket: "demo-project.appspot.com",
+                messagingSenderId: "123456789",
+                appId: "1:123456789:web:abcdef"
+            };
+
+        let app, auth, db;
+        let currentUser = null;
+
+        // Initialize Firebase safely
+        try {
+            app = initializeApp(firebaseConfig);
+            auth = getAuth(app);
+            db = getFirestore(app);
+
+            // Auth flow before Firestore queries
+            const initAuth = async () => {
+                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                    const userCredential = await signInWithCustomToken(auth, __initial_auth_token);
+                    currentUser = userCredential.user;
+                } else {
+                    const userCredential = await signInAnonymously(auth);
+                    currentUser = userCredential.user;
+                }
+            };
+            initAuth().catch(err => console.error("Firebase Auth Error:", err));
+        } catch (e) {
+            console.warn("Firebase initialized in offline/demo fallback mode:", e);
+        }
+
+        // Web Audio API Sound Effects Synthesizer (No external audio files required)
+        class SoundEngine {
+            constructor() {
+                this.ctx = null;
+                this.enabled = true;
+            }
+
+            init() {
+                if (!this.ctx) {
+                    this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+                }
+            }
+
+            // Mine hit sound
+            playMine() {
+                if (!this.enabled) return;
+                this.init();
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(120, this.ctx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(40, this.ctx.currentTime + 0.15);
+                gain.gain.setValueAtTime(0.3, this.ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.15);
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                osc.start();
+                osc.stop(this.ctx.currentTime + 0.15);
+            }
+
+            // XP level up tone (Minecraft Style)
+            playXP() {
+                if (!this.enabled) return;
+                this.init();
+                const now = this.ctx.currentTime;
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = 'sine';
+                
+                // Arpeggio
+                osc.frequency.setValueAtTime(523.25, now); // C5
+                osc.frequency.setValueAtTime(659.25, now + 0.08); // E5
+                osc.frequency.setValueAtTime(783.99, now + 0.16); // G5
+                osc.frequency.setValueAtTime(1046.50, now + 0.24); // C6
+
+                gain.gain.setValueAtTime(0.2, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.35);
+
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                osc.start();
+                osc.stop(now + 0.35);
+            }
+
+            // Wrong Answer Sound
+            playWrong() {
+                if (!this.enabled) return;
+                this.init();
+                const now = this.ctx.currentTime;
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(150, now);
+                osc.frequency.setValueAtTime(100, now + 0.15);
+                gain.gain.setValueAtTime(0.2, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                osc.start();
+                osc.stop(now + 0.3);
+            }
+        }
+
+        const audio = new SoundEngine();
+
+        // Questions Data Tiered into Easy, Medium, Hard
+        const QUESTION_BANK = {
+            easy: [
+                {
+                    context: "他寫作業總是馬馬虎虎、粗心大意，這樣<span class='target-word'>草率</span>的態度常常遭到老師批評。",
+                    targetWord: "草率",
+                    options: ["不認真、輕率敷衍", "勤奮認真", "仔細小心", "速度很快"],
+                    correct: 0,
+                    explanation: "從上文「馬馬虎虎、粗心大意」以及下文「遭到老師批評」，可以推斷「草率」是指做事態度不認真、隨便敷衍。"
+                },
+                {
+                    context: "晴朗的天空中沒有一朵白雲，只有一片<span class='target-word'>湛藍</span>的大海映照著藍天，顯得十分美麗。",
+                    targetWord: "湛藍",
+                    options: ["漆黑深沉", "深藍光亮", "灰暗無光", "翠綠鮮艷"],
+                    correct: 1,
+                    explanation: "上文提到「晴朗的天空」與「藍天」，下文說明「顯得十分美麗」，可知「湛藍」是用來形容如晴空般深藍美麗的顏色。"
+                },
+                {
+                    context: "這座山林深處沒有車聲也沒有喧鬧，只有鳥語花香，環境十分<span class='target-word'>幽靜</span>。",
+                    targetWord: "幽靜",
+                    options: ["熱鬧吵雜", "幽深安靜", "寒冷黑暗", "寬廣無邊"],
+                    correct: 1,
+                    explanation: "上文提到「沒有車聲也沒有喧鬧」，直接指出了安靜的環境特徵，因此「幽靜」是指幽深而安靜。"
+                },
+                {
+                    context: "小明一口氣跑上了十樓的階梯，累得直冒汗，<span class='target-word'>喘吁吁</span>地靠在牆邊休息。",
+                    targetWord: "喘吁吁",
+                    options: ["氣喘急促的樣子", "輕鬆自在的樣子", "高聲大叫", "傷心哭泣"],
+                    correct: 0,
+                    explanation: "上文提到「一口氣跑上十樓」與「累得直冒汗」，運動過後身體會急速呼吸，故「喘吁吁」形容急促喘氣的樣子。"
+                },
+                {
+                    context: "看到自己不小心弄壞了同桌最愛的玩具，小華低下頭，心裡感到非常<span class='target-word'>疚愧</span>。",
+                    targetWord: "疚愧",
+                    options: ["愧疚自責", "興奮自豪", "憤怒不平", "害怕恐懼"],
+                    correct: 0,
+                    explanation: "上文描述「弄壞了同桌最愛的玩具」與「低下頭」，表達出做錯事後的內疚表現，因此「疚愧」表示心中感到愧疚自責。"
+                },
+                {
+                    context: "這座山峰拔地而起，坡度非常大，山路既窄又<span class='target-word'>陡峭</span>，爬起來非常吃力。",
+                    targetWord: "陡峭",
+                    options: ["平坦好走", "坡度大而直立", "寬闊平穩", "濕滑泥濘"],
+                    correct: 1,
+                    explanation: "上文提到「坡度非常大」以及下文「爬起來非常吃力」，可知「陡峭」形容山勢直立、坡度極大。"
+                },
+                {
+                    context: "雖然遇到了不少困難，但他總是面帶笑容、熱情待人，性格非常<span class='target-word'>開朗</span>。",
+                    targetWord: "開朗",
+                    options: ["孤僻內向", "樂觀豁達", "憂鬱悲傷", "嚴肅古板"],
+                    correct: 1,
+                    explanation: "從上文「面帶笑容、熱情待人」等積極正面的人格特質，可以推斷「開朗」是指思想樂觀、性格爽朗。"
+                },
+                {
+                    context: "可憐的小狗被主人遺棄在路邊，看到有人經過就<span class='target-word'>搖尾乞憐</span>，希望能得到一點食物。",
+                    targetWord: "搖尾乞憐",
+                    options: ["裝作可憐討好以求憐憫", "威風凜凜", "兇猛狂吠", "快速逃跑"],
+                    correct: 0,
+                    explanation: "上文「被遺棄」與下文「希望能得到一點食物」，說明小狗為了求生而搖尾巴討好人類，意指搖著尾巴乞求憐惜。"
+                }
+            ],
+            medium: [
+                {
+                    context: "經過大家整整一天的打掃與重新裝飾，原本破舊暗沉的教室變得<span class='target-word'>煥然一新</span>。",
+                    targetWord: "煥然一新",
+                    options: ["呈現出全新光彩的面貌", "依然陳舊破爛", "變得雜亂無章", "稍微有些乾淨"],
+                    correct: 0,
+                    explanation: "上文對比「打掃與重新裝飾」前「破舊暗沉」的狀態，經過改變後呈現截然不同的全新面貌，即「煥然一新」。"
+                },
+                {
+                    context: "遇到突如其來的火災警報，隊長沒有慌張，反而十分<span class='target-word'>鎮定</span>地指揮大家有序撤離。",
+                    targetWord: "鎮定",
+                    options: ["害怕發抖", "沉著冷靜", "猶豫不決", "興奮狂喜"],
+                    correct: 1,
+                    explanation: "上文「沒有慌張」與下文「有序指揮撤離」為反義與動作線索，說明「鎮定」是指遇到急事時心情沉著不慌亂。"
+                },
+                {
+                    context: "這位雕刻家花了數十年苦練，他的雕刻技術非常<span class='target-word'>精湛</span>，雕刻出的人物栩栩如生。",
+                    targetWord: "精湛",
+                    options: ["粗劣笨拙", "精深精妙", "普通一般", "剛剛學會"],
+                    correct: 1,
+                    explanation: "上文提到「花了數十年苦練」，下文說明「作品栩栩如生」，顯示出技藝達到極高水準，故「精湛」指精深超卓。"
+                },
+                {
+                    context: "這本偵探小說情節曲折離奇、緊湊精彩，每一頁都<span class='target-word'>扣人心弦</span>，讓人停不下來。",
+                    targetWord: "扣人心弦",
+                    options: ["令人感到無聊", "牽動人心、極具吸引力", "讓人昏昏欲睡", "充滿危險"],
+                    correct: 1,
+                    explanation: "上文「情節曲折離奇、緊湊精彩」以及下文「讓人停不下來」，表示內容強烈吸引讀者的心靈情緒。"
+                },
+                {
+                    context: "闖禍的小強站在校長室門口，心裡<span class='target-word'>惴惴不安</span>，生怕受到嚴厲的懲罰。",
+                    targetWord: "惴惴不安",
+                    options: ["興高采烈", "因害怕而心神不定", "充滿信心", "毫不在乎"],
+                    correct: 1,
+                    explanation: "上文「闖禍」與下文「生怕受到嚴厲懲罰」，推斷出他此刻心理極度擔憂恐懼，故「惴惴不安」形容因恐懼而不安。"
+                },
+                {
+                    context: "經過老師的耐心教導，小剛終於意識到自己的錯誤，決定<span class='target-word'>痛改前非</span>，做一個守規矩的好學生。",
+                    targetWord: "痛改前非",
+                    options: ["徹底改正以往的過錯", "繼續犯錯", "掩飾自己的過失", "責怪其他人"],
+                    correct: 0,
+                    explanation: "上文「意識到錯誤」與下文「做一個守規矩的好學生」，前後對比顯示出他決定下定決心徹底徹底修正以前的錯誤。"
+                },
+                {
+                    context: "朋友之間難免會有摩擦，但只要我們學會互相<span class='target-word'>包容</span>，就能化解許多矛盾。",
+                    targetWord: "包容",
+                    options: ["寬容原諒與接納", "斤斤計較", "互相批評", "斷絕來往"],
+                    correct: 0,
+                    explanation: "下文提到「能化解許多矛盾」，可知與朋友相處時需要寬宏大量、互相容忍接納，這正是「包容」的意思。"
+                },
+                {
+                    context: "看到昔日繁華的老街如今落得荒涼一片，老人不禁搖頭嘆息，心裡<span class='target-word'>唏噓不已</span>。",
+                    targetWord: "唏噓不已",
+                    options: ["開心歡呼", "感慨嘆息不絕", "憤怒吼叫", "冷漠無情"],
+                    correct: 1,
+                    explanation: "上文對比「昔日繁華」與「如今荒涼」，加上老人「搖頭嘆息」的舉動，說明「唏噓不已」是指內心無比感傷嘆息。"
+                }
+            ],
+            hard: [
+                {
+                    context: "這篇演講稿刪除了所有冗長多餘的廢話，文字非常<span class='target-word'>精煉</span>，傳達的意思卻十分深刻。",
+                    targetWord: "精煉",
+                    options: ["簡潔扼要精萃", "長篇大論", "模糊不清", "繁瑣複雜"],
+                    correct: 0,
+                    explanation: "上文「刪除所有冗長多餘廢話」以及下文「意思深刻」，線索表明文章用字十分精簡提煉、絕不拖泥帶水。"
+                },
+                {
+                    context: "雖然在實驗中經歷了一百多次失敗，科學家依然保持<span class='target-word'>百折不撓</span>的精神，最終研發出了新藥。",
+                    targetWord: "百折不撓",
+                    options: ["意志堅定，受挫折決不屈服", "遇到困難就放棄", "性格驕傲自大", "做事三分鐘熱度"],
+                    correct: 0,
+                    explanation: "上文「經歷一百多次失敗」與下文「最終研發出新藥」，證明他在多次挫折中依然堅持到底，不屈不撓。"
+                },
+                {
+                    context: "在這場討論會上，組員們紛紛<span class='target-word'>各抒己見</span>，提出了許多富有創意的改進方案。",
+                    targetWord: "各抒己見",
+                    options: ["各自發表自己的意見", "大家都保持沉默", "盲目聽從組長", "爭吵不休"],
+                    correct: 0,
+                    explanation: "拆字與上下文線索：「各」表示各自，「抒」表示抒發發表，「己見」指自己的見解；下文「提出許多方案」印證了此意。"
+                },
+                {
+                    context: "這個自然現象背後隱藏著有趣的科學原理，值得我們深入<span class='target-word'>探究</span>與學習。",
+                    targetWord: "探究",
+                    options: ["探索研究其本質原因", "走馬看花", "隨意猜測", "放棄思考"],
+                    correct: 0,
+                    explanation: "上文指出了「背後隱藏著科學原理」，因此需要我們發掘、探索並研究其中的奧秘，即為「探究」。"
+                },
+                {
+                    context: "突如其來的大雨把我淋得通透，鞋子褲腳全是泥巴，樣子看起來非常<span class='target-word'>狼狽不堪</span>。",
+                    targetWord: "狼狽不堪",
+                    options: ["窘迫混亂、極為難堪", "帥氣瀟灑", "整潔乾淨", "威風凜凜"],
+                    correct: 0,
+                    explanation: "上文「淋得通透」與「全身泥巴」，塑造出一副困頓受挫、儀容混亂難看的模樣，即「狼狽不堪」。"
+                },
+                {
+                    context: "天氣變化多端，這場大雨來得太突然，真是<span class='target-word'>難以預料</span>。",
+                    targetWord: "難以預料",
+                    options: ["事先無法預先推測", "容易掌握", "已經提前知道", "按照計畫進行"],
+                    correct: 0,
+                    explanation: "上文提到「變化多端」與「來得太突然」，線索指向事前根本無法預先料想或推測。"
+                },
+                {
+                    context: "聽完老師詳細的解說後，原本困擾我好幾天的難題頓時<span class='target-word'>豁然開朗</span>，一下子全明白了。",
+                    targetWord: "豁然開朗",
+                    options: ["思路頓時通達開開朗明白", "變得更加混亂", "感到迷茫困惑", "眼睛突然發亮"],
+                    correct: 0,
+                    explanation: "上文「困擾好幾天」與下文「一下子全明白了」，形成對比，形容原本困惑的思路突然變得開闊明朗。"
+                },
+                {
+                    context: "經驗豐富的警察在犯罪現場仔細搜尋，終於找到了一絲<span class='target-word'>蛛絲馬跡</span>，順利鎖定了嫌犯。",
+                    targetWord: "蛛絲馬跡",
+                    options: ["隱約可尋的細微線索", "巨大的實體證據", "蜘蛛與馬的印記", "毫無關聯的事物"],
+                    correct: 0,
+                    explanation: "上文「仔細搜尋」與下文「鎖定嫌犯」，說明尋找到了非常細小但能提供方向的線索痕跡。"
+                }
+            ]
+        };
+
+        // Game State Engine
+        const state = {
+            playerName: '',
+            level: 'easy', // easy, medium, hard
+            questionIndex: 0,
+            score: 0,
+            timeSeconds: 0,
+            timerInterval: null,
+            currentQuestions: [],
+            isAnswered: false
+        };
+
+        // DOM Element Selectors
+        const views = {
+            login: document.getElementById('view-login'),
+            difficulty: document.getElementById('view-difficulty'),
+            game: document.getElementById('view-game'),
+            result: document.getElementById('view-result')
+        };
+
+        const elements = {
+            playerNameInput: document.getElementById('player-name'),
+            btnStart: document.getElementById('btn-start'),
+            btnAudioToggle: document.getElementById('audio-toggle'),
+            currentPlayerDisplay: document.getElementById('current-player-display'),
+            currentLevelBadge: document.getElementById('current-level-badge'),
+            timerDisplay: document.getElementById('timer-display'),
+            scoreDisplay: document.getElementById('score-display'),
+            oreBlock: document.getElementById('ore-block'),
+            qIndexNum: document.getElementById('q-index-num'),
+            progressPercent: document.getElementById('progress-percent'),
+            xpBar: document.getElementById('xp-bar'),
+            questionContext: document.getElementById('question-context'),
+            targetWordDisplay: document.getElementById('target-word-display'),
+            optionsGrid: document.getElementById('options-grid'),
+            feedbackModal: document.getElementById('feedback-modal'),
+            feedbackHeader: document.getElementById('feedback-header'),
+            feedbackExplanation: document.getElementById('feedback-explanation'),
+            btnNextQuestion: document.getElementById('btn-next-question'),
+            floatingXpContainer: document.getElementById('floating-xp-container'),
+            resLevel: document.getElementById('res-level'),
+            resScore: document.getElementById('res-score'),
+            resTime: document.getElementById('res-time'),
+            leaderboardBody: document.getElementById('leaderboard-body'),
+            btnRestart: document.getElementById('btn-restart')
+        };
+
+        // Helper function to switch views
+        function switchView(targetView) {
+            Object.values(views).forEach(v => v.classList.add('hidden'));
+            targetView.classList.remove('hidden');
+        }
+
+        // Toggle Sound Engine
+        elements.btnAudioToggle.addEventListener('click', () => {
+            audio.enabled = !audio.enabled;
+            elements.btnAudioToggle.innerText = audio.enabled ? "🔊 音效: 開" : "🔇 音效: 關";
+        });
+
+        // Event: Start Adventure from Name Screen
+        elements.btnStart.addEventListener('click', () => {
+            const name = elements.playerNameInput.value.trim();
+            if (!name) {
+                // Inline feedback without alert()
+                elements.playerNameInput.classList.add('border-red-500');
+                elements.playerNameInput.placeholder = "請先輸入名字喔！";
+                return;
+            }
+            state.playerName = name;
+            switchView(views.difficulty);
+        });
+
+        // Event: Level Selection
+        document.querySelectorAll('.btn-select-level').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const selectedLevel = e.currentTarget.getAttribute('data-level');
+                startNewGame(selectedLevel);
+            });
+        });
+
+        // Function: Start New Game Logic
+        function startNewGame(levelKey) {
+            state.level = levelKey;
+            state.questionIndex = 0;
+            state.score = 0;
+            state.timeSeconds = 0;
+            state.isAnswered = false;
+
+            // Deep clone questions & shuffle choices order
+            state.currentQuestions = JSON.parse(JSON.stringify(QUESTION_BANK[levelKey]));
+
+            // Update UI elements for Level Theme
+            elements.currentPlayerDisplay.innerText = state.playerName;
+            
+            if (levelKey === 'easy') {
+                elements.currentLevelBadge.innerText = '泥土階梯';
+                elements.currentLevelBadge.className = 'px-2 py-0.5 text-xs font-black rounded bg-amber-800 text-white';
+                elements.oreBlock.className = 'w-16 h-16 bg-dirt border-4 border-black rounded flex items-center justify-center text-3xl shadow-lg relative transition-transform';
+                elements.oreBlock.innerText = '🟫';
+            } else if (levelKey === 'medium') {
+                elements.currentLevelBadge.innerText = '鐵礦階梯';
+                elements.currentLevelBadge.className = 'px-2 py-0.5 text-xs font-black rounded bg-gray-500 text-white';
+                elements.oreBlock.className = 'w-16 h-16 bg-iron border-4 border-black rounded flex items-center justify-center text-3xl shadow-lg relative transition-transform';
+                elements.oreBlock.innerText = '🩶';
+            } else {
+                elements.currentLevelBadge.innerText = '鑽石階梯';
+                elements.currentLevelBadge.className = 'px-2 py-0.5 text-xs font-black rounded bg-teal-600 text-white';
+                elements.oreBlock.className = 'w-16 h-16 bg-diamond border-4 border-black rounded flex items-center justify-center text-3xl shadow-lg relative transition-transform';
+                elements.oreBlock.innerText = '💎';
+            }
+
+            elements.scoreDisplay.innerText = state.score;
+            elements.timerDisplay.innerText = '00:00';
+
+            // Start Timer
+            if (state.timerInterval) clearInterval(state.timerInterval);
+            state.timerInterval = setInterval(() => {
+                state.timeSeconds++;
+                const mins = String(Math.floor(state.timeSeconds / 60)).padStart(2, '0');
+                const secs = String(state.timeSeconds % 60).padStart(2, '0');
+                elements.timerDisplay.innerText = `${mins}:${secs}`;
+            }, 1000);
+
+            switchView(views.game);
+            renderCurrentQuestion();
+        }
+
+        // Render Question to UI
+        function renderCurrentQuestion() {
+            state.isAnswered = false;
+            const q = state.currentQuestions[state.questionIndex];
+
+            // Progress Bar & Counter
+            const currentNum = state.questionIndex + 1;
+            elements.qIndexNum.innerText = currentNum;
+            const percent = Math.round(((currentNum - 1) / 8) * 100);
+            elements.progressPercent.innerText = `${percent}%`;
+            elements.xpBar.style.width = `${percent}%`;
+
+            // Question Content
+            elements.questionContext.innerHTML = q.context;
+            elements.targetWordDisplay.innerText = `【${q.targetWord}】`;
+
+            // Render Options
+            elements.optionsGrid.innerHTML = '';
+            const labels = ['A', 'B', 'C', 'D'];
+
+            q.options.forEach((optText, idx) => {
+                const btn = document.createElement('button');
+                btn.className = 'mc-button bg-gray-700 hover:bg-gray-600 border-2 border-black p-3 text-left rounded text-sm md:text-base font-bold flex items-center space-x-3 transition-colors';
+                btn.innerHTML = `
+                    <span class="w-7 h-7 bg-black text-yellow-300 rounded flex items-center justify-center font-mono font-black text-xs shrink-0">${labels[idx]}</span>
+                    <span class="text-gray-100">${optText}</span>
+                `;
+                btn.addEventListener('click', () => handleOptionClick(idx));
+                elements.optionsGrid.appendChild(btn);
+            });
+        }
+
+        // Answer Option Selected
+        function handleOptionClick(selectedIndex) {
+            if (state.isAnswered) return;
+            state.isAnswered = true;
+
+            const q = state.currentQuestions[state.questionIndex];
+            const isCorrect = (selectedIndex === q.correct);
+
+            // Block Break Particle & Sound
+            if (isCorrect) {
+                audio.playMine();
+                setTimeout(() => audio.playXP(), 150);
+
+                // Add Animation
+                elements.oreBlock.classList.add('mine-animation');
+                setTimeout(() => elements.oreBlock.classList.remove('mine-animation'), 400);
+
+                // Add Score
+                state.score += 100;
+                elements.scoreDisplay.innerText = state.score;
+
+                // Show Floating XP Text
+                showFloatingXP("+100 XP!");
+
+                // Feedback Modal UI
+                elements.feedbackHeader.className = "text-xl font-black text-green-400 flex items-center space-x-2";
+                elements.feedbackHeader.innerHTML = `<span>🎉 答對了！順利採集方塊！</span>`;
+            } else {
+                audio.playWrong();
+                elements.feedbackHeader.className = "text-xl font-black text-red-400 flex items-center space-x-2";
+                elements.feedbackHeader.innerHTML = `<span>❌ 差一點點！再接再厲！</span>`;
+            }
+
+            // Explanation Modal
+            elements.feedbackExplanation.innerText = q.explanation;
+            elements.feedbackModal.classList.remove('hidden');
+        }
+
+        // Floating XP Effect
+        function showFloatingXP(text) {
+            const el = document.createElement('div');
+            el.className = 'floating-xp text-2xl md:text-3xl font-black text-yellow-300 pixel-font drop-shadow-[0_2px_2px_rgba(0,0,0,1)]';
+            el.innerText = text;
+            elements.floatingXpContainer.appendChild(el);
+            setTimeout(() => el.remove(), 800);
+        }
+
+        // Event: Next Question Button in Modal
+        elements.btnNextQuestion.addEventListener('click', () => {
+            elements.feedbackModal.classList.add('hidden');
+            state.questionIndex++;
+
+            if (state.questionIndex < 8) {
+                renderCurrentQuestion();
+            } else {
+                finishGame();
+            }
+        });
+
+        // Finish Game & Show Results
+        async function finishGame() {
+            if (state.timerInterval) clearInterval(state.timerInterval);
+
+            // Complete XP Bar
+            elements.progressPercent.innerText = '100%';
+            elements.xpBar.style.width = '100%';
+
+            // Calculate display stats
+            const mins = String(Math.floor(state.timeSeconds / 60)).padStart(2, '0');
+            const secs = String(state.timeSeconds % 60).padStart(2, '0');
+            const timeFormatted = `${mins}:${secs}`;
+
+            const levelNames = { easy: '泥土階梯 (初級)', medium: '鐵礦階梯 (中級)', hard: '鑽石階梯 (高級)' };
+
+            elements.resLevel.innerText = levelNames[state.level];
+            elements.resScore.innerText = state.score;
+            elements.resTime.innerText = timeFormatted;
+
+            switchView(views.result);
+
+            // Upload and Fetch Leaderboard
+            await saveAndFetchLeaderboard(state.playerName, state.level, state.score, state.timeSeconds, timeFormatted);
+        }
+
+        // Save & Fetch Firebase Leaderboard (Following STRICT Firestore rules)
+        async function saveAndFetchLeaderboard(name, levelKey, score, timeSec, timeFormatted) {
+            const levelNamesShort = { easy: '初級', medium: '中級', hard: '高級' };
+            elements.leaderboardBody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-gray-400">正在更新同一連結全服龍虎榜...</td></tr>`;
+
+            try {
+                // Rule 1: STRICT Path /artifacts/{appId}/public/data/leaderboard
+                const leaderboardCol = collection(db, 'artifacts', appId, 'public', 'data', 'leaderboard');
+
+                // Add current score
+                if (currentUser) {
+                    await addDoc(leaderboardCol, {
+                        name: name,
+                        level: levelNamesShort[levelKey],
+                        score: score,
+                        timeSec: timeSec,
+                        timeFormatted: timeFormatted,
+                        createdAt: Date.now()
+                    });
+                }
+
+                // Rule 2: Simple Query & In-memory Sorting (No complex orderBy in Firestore query)
+                const snapshot = await getDocs(leaderboardCol);
+                const records = [];
+                snapshot.forEach(doc => {
+                    records.push(doc.data());
+                });
+
+                // Sort in Memory: Score descending, then Time ascending
+                records.sort((a, b) => {
+                    if (b.score !== a.score) return b.score - a.score;
+                    return a.timeSec - b.timeSec;
+                });
+
+                // Top 5
+                const top5 = records.slice(0, 5);
+
+                // Render Table
+                elements.leaderboardBody.innerHTML = '';
+                if (top5.length === 0) {
+                    elements.leaderboardBody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-gray-400">暫無排行紀錄</td></tr>`;
+                    return;
+                }
+
+                top5.forEach((item, idx) => {
+                    const row = document.createElement('tr');
+                    row.className = idx === 0 ? "bg-yellow-900 bg-opacity-30 font-bold" : "hover:bg-gray-800";
+                    
+                    const medals = ['🥇', '🥈', '🥉', '4️⃣', '5️⃣'];
+                    row.innerHTML = `
+                        <td class="p-2 font-mono">${medals[idx] || idx + 1}</td>
+                        <td class="p-2 text-yellow-200">${escapeHtml(item.name || '冒險者')}</td>
+                        <td class="p-2"><span class="px-1.5 py-0.5 text-xs rounded bg-gray-700">${item.level || '初級'}</span></td>
+                        <td class="p-2 font-mono text-yellow-400 font-bold">${item.score}</td>
+                        <td class="p-2 font-mono text-gray-300">${item.timeFormatted || '00:00'}</td>
+                    `;
+                    elements.leaderboardBody.appendChild(row);
+                });
+
+            } catch (err) {
+                console.error("Leaderboard Error:", err);
+                elements.leaderboardBody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-red-400">載入龍虎榜失敗，已顯示離線個人最佳記錄。</td></tr>`;
+            }
+        }
+
+        // Helper: Escape HTML string to prevent XSS
+        function escapeHtml(str) {
+            return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+        }
+
+        // Restart Game Event
+        elements.btnRestart.addEventListener('click', () => {
+            switchView(views.difficulty);
+        });
+
+    </script>
+</body>
+</html>
