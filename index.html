@@ -6,155 +6,70 @@
   <title>方塊語文大冒險：詞意推斷大師</title>
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Google Fonts - VT323 像素字型與微軟正黑體 -->
-  <link href="https://fonts.googleapis.com/css2?family=VT323&family=Noto+Sans+TC:wght@400;700;900&display=swap" rel="stylesheet">
-  
+  <!-- Google Fonts - VT323 像素字型 -->
+  <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
   <style>
     body {
-      font-family: 'Noto Sans TC', 'VT323', monospace, sans-serif;
-      background-color: #121826;
-      background-image: 
-        radial-gradient(#1e293b 2px, transparent 2px),
-        radial-gradient(#1e293b 2px, #0f172a 2px);
-      background-size: 40px 40px;
-      background-position: 0 0, 20px 20px;
+      font-family: 'VT323', monospace, 'Microsoft JhengHei', sans-serif;
+      background-color: #1a1a1a;
       image-rendering: pixelated;
     }
-
-    /* Minecraft 像素風格按鈕 */
     .mc-button {
-      background-color: #525252;
-      border: 4px solid #000000;
-      border-top-color: #8e8e8e;
-      border-left-color: #8e8e8e;
-      border-bottom-color: #262626;
-      border-right-color: #262626;
-      box-shadow: inset -2px -2px 0px 0px #1a1a1a;
-      color: #ffffff;
-      text-shadow: 2px 2px 0px #000000;
-      transition: all 0.08s ease-in-out;
-      cursor: pointer;
-      user-select: none;
+      background-color: #727272;
+      border: 4px solid #000;
+      border-top-color: #a8a8a8;
+      border-left-color: #a8a8a8;
+      border-bottom-color: #3b3b3b;
+      border-right-color: #3b3b3b;
+      box-shadow: inset -2px -2px 0px 0px #262626;
+      color: #fff;
+      text-shadow: 2px 2px #000;
     }
     .mc-button:hover:not(:disabled) {
-      background-color: #6b6b6b;
-      transform: translateY(-2px);
+      background-color: #8b8b8b;
     }
     .mc-button:active:not(:disabled) {
-      border-top-color: #262626;
-      border-left-color: #262626;
-      border-bottom-color: #8e8e8e;
-      border-right-color: #8e8e8e;
-      transform: translateY(1px);
+      border-top-color: #3b3b3b;
+      border-left-color: #3b3b3b;
+      border-bottom-color: #a8a8a8;
+      border-right-color: #a8a8a8;
     }
-
-    /* 泥土/綠草主題按鈕 */
-    .mc-button-green {
-      background-color: #2e7d32;
-      border-top-color: #4caf50;
-      border-left-color: #4caf50;
-      border-bottom-color: #1b5e20;
-      border-right-color: #1b5e20;
-    }
-    .mc-button-green:hover:not(:disabled) {
-      background-color: #388e3c;
-    }
-
-    /* 金黃鑽石主題按鈕 */
-    .mc-button-gold {
-      background-color: #f57f17;
-      border-top-color: #fbc02d;
-      border-left-color: #fbc02d;
-      border-bottom-color: #e65100;
-      border-right-color: #e65100;
-    }
-    .mc-button-gold:hover:not(:disabled) {
-      background-color: #fbc02d;
-    }
-
-    /* 藍色水鑽按鈕 */
-    .mc-button-blue {
-      background-color: #0288d1;
-      border-top-color: #29b6f6;
-      border-left-color: #29b6f6;
-      border-bottom-color: #01579b;
-      border-right-color: #01579b;
-    }
-    .mc-button-blue:hover:not(:disabled) {
-      background-color: #039be5;
-    }
-
-    /*  Minecraft 懸浮面板框 */
     .mc-panel {
       background-color: #c6c6c6;
-      border: 6px solid #000000;
+      border: 4px solid #000;
       border-top-color: #ffffff;
       border-left-color: #ffffff;
       border-bottom-color: #555555;
       border-right-color: #555555;
-      box-shadow: 0 20px 25px -5px rgba(0,0,0,0.7);
-    }
-
-    /* 遊戲背景深色泥土框 */
-    .mc-panel-dark {
-      background-color: #212121;
-      border: 6px solid #000000;
-      border-top-color: #424242;
-      border-left-color: #424242;
-      border-bottom-color: #101010;
-      border-right-color: #101010;
-    }
-
-    /* 文字發光效果 */
-    .pixel-text-shadow {
-      text-shadow: 3px 3px 0px #000;
     }
   </style>
 </head>
-<body class="min-h-screen text-slate-100 flex flex-col justify-between p-3 md:p-6">
+<body class="min-h-screen text-slate-100 flex flex-col justify-between p-2 md:p-6 bg-slate-900">
 
-  <!-- 頂部標題與學校資訊列 -->
-  <header class="max-w-4xl mx-auto w-full text-center my-2 md:my-4">
-    <div class="inline-block bg-black/60 backdrop-blur px-4 py-2 rounded-lg border-2 border-amber-500/50 mb-2">
-      <span class="text-amber-400 font-bold text-xs md:text-sm tracking-widest">
-        四年級閱讀策略
-      </span>
-    </div>
-    <h1 class="text-3xl md:text-5xl font-black text-yellow-400 tracking-wider pixel-text-shadow">
-      ⛏️ 方塊語文大冒險
+  <!-- 頂部標題列 -->
+  <header class="max-w-4xl mx-auto w-full text-center my-4">
+    <h1 class="text-3xl md:text-5xl font-bold text-yellow-400 tracking-wider drop-shadow-[0_4px_0_rgba(0,0,0,1)]">
+      ⛏️ 方塊語文大冒險：詞意推斷大師
     </h1>
-    <p class="text-slate-300 text-sm md:text-base font-bold mt-1 tracking-wide">
-      ── 詞意推斷大師：透過上文下理推斷詞意 ──
-    </p>
+    <p class="text-slate-300 text-sm md:text-base mt-2">四年級閱讀策略：透過上文下理推斷詞意</p>
   </header>
 
-  <!-- 主要遊戲互動容器 -->
-  <main id="app" class="max-w-3xl mx-auto w-full flex-1 flex flex-col justify-center my-2">
-    <!-- 內容將由 JavaScript 動態渲染 -->
+  <!-- 主要遊戲容器 -->
+  <main id="app" class="max-w-3xl mx-auto w-full flex-1 flex flex-col justify-center">
+    <!-- 動態內容由 JavaScript 渲染 -->
   </main>
 
   <!-- 頁尾 -->
-  <footer class="max-w-4xl mx-auto w-full text-center my-3 text-xs text-slate-400 font-bold">
-    © 2026 語文科小學閱讀策略互動遊戲 | Powered by Firebase & GitHub Pages
+  <footer class="max-w-4xl mx-auto w-full text-center my-4 text-xs text-slate-500">
+    香港道教聯合會圓玄學院第三小學 | 閱讀策略 WEB GAME
   </footer>
 
   <!-- Firebase SDK (v11 ESM) -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
-    import { 
-      getFirestore, 
-      collection, 
-      addDoc, 
-      getDocs, 
-      query, 
-      orderBy, 
-      limit, 
-      serverTimestamp 
-    } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+    import { getFirestore, collection, addDoc, getDocs, query, orderBy, limit, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
 
-    // =========================================================================
-    // ⚙️ 使用使用者提供之專屬 Firebase Config 資訊
-    // =========================================================================
+    // Firebase 配置設定
     const firebaseConfig = {
       apiKey: "AIzaSyDnpcnEOu7DovQmxU6fKXv_HMzXGrMuBGk",
       authDomain: "guessingchinesewords.firebaseapp.com",
@@ -166,6 +81,7 @@
       measurementId: "G-LGJ8V6C4BB"
     };
 
+    // 初始化 Firebase
     let db = null;
     let isCloudConnected = false;
 
@@ -173,48 +89,45 @@
       const app = initializeApp(firebaseConfig);
       db = getFirestore(app);
       isCloudConnected = true;
-      console.log("連線成功：Firebase 雲端資料庫已成功啟用！");
     } catch (e) {
-      console.warn("Firebase 初始化時遇到狀況，將自動啟用本機暫存備份模式:", e);
+      console.error("Firebase 初始化失敗，啟用本機備份模式：", e);
     }
 
-    // =========================================================================
-    // 📚 題庫資料 (高中低三層，各 8 題，共 24 題專用閱讀策略題目)
-    // =========================================================================
+    // 題庫資料 (高中低三層，各 8 題)
     const QUESTION_BANK = {
       easy: [
-        { id: 1, text: "小明今天非常過分，老師給他提出了嚴厲的警告，希望他能認錯。", word: "嚴厲", options: ["溫和慈祥", "嚴格厲害", "隨便輕浮", "高聲大叫"], answer: 1, clue: "上文『小明過分』和下文『希望他認錯』，可推斷老師的警告是非常認真且嚴格的。" },
-        { id: 2, text: "這座花園裡的花朵盛開，散發出陣陣淡雅的香氣，令人心曠神怡。", word: "淡雅", options: ["濃烈刺鼻", "清新雅緻", "惡臭難聞", "色彩繽紛"], answer: 1, clue: "下文『令人心曠神怡』說明香氣清淡舒爽，並非濃烈或難聞。" },
-        { id: 3, text: "經過長途跋涉，運動員們已經精疲力竭，躺在草地上不想動彈。", word: "精疲力竭", options: ["精神抖擻", "體力耗盡", "興高采烈", "滿懷希望"], answer: 1, clue: "下文『躺在草地上不想動彈』，推斷出體力已經完全消耗殆盡。" },
-        { id: 4, text: "弟弟小心翼翼地捧著玻璃杯，生怕一不小心把它摔碎了。", word: "小心翼翼", options: ["非常謹慎", "粗心大意", "快速奔跑", "隨隨便便"], answer: 0, clue: "下文『生怕一不小心把它摔碎』，顯現出極度謹慎謹慎的動作態度。" },
-        { id: 5, text: "大雨滂沱，街上的行人紛紛撐開傘，急忙尋找躲雨的地方。", word: "大雨滂沱", options: ["下著毛毛細雨", "雨下得非常大", "天空中沒有雲", "陽光十分強烈"], answer: 1, clue: "下文『行人紛紛撐傘急忙躲雨』，暗示當時雨勢相當巨大。" },
-        { id: 6, text: "這本小說的情節曲折離奇，引人入勝，讓我忍不住一頁頁看下去。", word: "引人入勝", options: ["讓人感到無聊", "吸引人進入佳境", "讓人心生恐懼", "文字非常難懂"], answer: 1, clue: "下文『忍不住一頁頁看下去』，代表故事內容非常有吸引力。" },
-        { id: 7, text: "面對突如其來的地震，小華沒有慌張，反而十分鎮定地指導大家避難。", word: "鎮定", options: ["驚慌失措", "沉著冷靜", "憤怒不平", "高興歡呼"], answer: 1, clue: "上文『沒有慌張』與『反而...』形成直接說明，意指沉著冷靜。" },
-        { id: 8, text: "做事情不能草率，必須認真檢查每一個細節，才能確保萬無一失。", word: "草率", options: ["馬虎不認真", "非常仔細", "動作迅速", "堅持到底"], answer: 0, clue: "下文對比『必須認真檢查細節』，反推『草率』意為做事馬虎隨便。" }
+        { id: 1, text: "小明今天非常過分，老師給他提出了嚴厲的警告，希望他能認錯。", word: "嚴厲", options: ["溫和慈祥", "嚴格厲害", "隨便輕浮", "高聲大叫"], answer: 1, clue: "上文『小明過分』和下文『希望他認錯』，推斷警告是非常認真且嚴格的。" },
+        { id: 2, text: "這座花園裡的花朵盛開，散發出陣陣淡雅的香氣，令人心曠神怡。", word: "淡雅", options: ["濃烈刺鼻", "清新雅緻", "惡臭難聞", "色彩繽紛"], answer: 1, clue: "下文『令人心曠神怡』，說明香氣是舒服清新的，非濃烈或惡臭。" },
+        { id: 3, text: "經過長途跋涉，運動員們已經精疲力竭，躺在草地上不想動彈。", word: "精疲力竭", options: ["精神抖擻", "體力耗盡", "興高采烈", "滿懷希望"], answer: 1, clue: "下文『躺在草地上不想動彈』，推斷出體力已經完全消耗光了。" },
+        { id: 4, text: "弟弟小心翼翼地捧著玻璃杯，生怕一不小心把它摔碎了。", word: "小心翼翼", options: ["非常謹慎", "粗心大意", "快速奔跑", "隨隨便便"], answer: 0, clue: "下文『生怕一不小心把它摔碎』，顯現出極度謹慎小心的態度。" },
+        { id: 5, text: "大雨滂沱，街上的行人紛紛撐開傘，急忙尋找躲雨的地方。", word: "大雨滂沱", options: ["下著毛毛細雨", "雨下得非常大", "天空中沒有雲", "陽光十分強烈"], answer: 1, clue: "下文『行人紛紛撐傘急忙躲雨』，暗示雨勢極大。" },
+        { id: 6, text: "這本小說的情節曲折離奇，引人入勝，讓我忍不住一頁頁看下去。", word: "引人入勝", options: ["讓人感到無聊", "吸引人進入佳境", "讓人心生恐懼", "文字非常難懂"], answer: 1, clue: "下文『忍不住一頁頁看下去』，代表故事極具吸引力。" },
+        { id: 7, text: "面對突如其來的地震，小華沒有慌張，反而十分鎮定地指導大家避難。", word: "鎮定", options: ["驚慌失措", "沉著冷靜", "憤怒不平", "高興歡呼"], answer: 1, clue: "上文『沒有慌張』直接說明了『鎮定』即是沉著冷靜。" },
+        { id: 8, text: "做事情不能草率，必須認真檢查每一個細節，才能確保萬無一失。", word: "草率", options: ["馬虎不認真", "非常仔細", "動作迅速", "堅持到底"], answer: 0, clue: "下文對比『必須認真檢查細節』，反推『草率』意為馬虎隨便。" }
       ],
       medium: [
-        { id: 9, text: "面對對手的挑釁，他始終保持沉默，不予理會。", word: "不予理會", options: ["熱情回應", "不加理睬", "非常生氣", "主動道歉"], answer: 1, clue: "上文『保持沉默』說明他不打算對對手作任何回應或理睬。" },
-        { id: 10, text: "這場音樂會的票十分緊俏，開售不到五分鐘就被搶購一空。", word: "緊俏", options: ["貨源充足", "非常熱銷搶手", "價格便宜", "無人問津"], answer: 1, clue: "下文『五分鐘內被搶購一空』，顯示出門票極度熱銷受歡迎。" },
-        { id: 11, text: "討論會上大家各抒己見，提出了許多寶貴的意見。", word: "各抒己見", options: ["沉默不語", "各自發表自己的意見", "盲目認同他人", "互相爭吵"], answer: 1, clue: "下文『提出了許多寶貴意見』，說明大家各自說出了自己的看法。" },
-        { id: 12, text: "這幅畫作色彩絢麗，吸引了許多藝術愛好者駐足欣賞。", word: "駐足", options: ["停下腳步", "快速離開", "跑步前進", "大聲喊叫"], answer: 0, clue: "上下文『吸引愛好者欣賞』，推斷他們會停下腳步專心觀看。" },
-        { id: 13, text: "這個秘密他隱瞞了多年，直到今天才吐露真相。", word: "隱瞞", options: ["公開宣佈", "藏匿不讓人知道", "隨意編造", "忘記清楚"], answer: 1, clue: "下文『直到今天才吐露』，說明之前一直藏著不讓別人知道。" },
-        { id: 14, text: "他辦事向來雷厲風行，絕不拖泥帶水，因此效率極高。", word: "雷厲風行", options: ["拖延時間", "執行果斷迅速", "猶豫不決", "聲音非常大"], answer: 1, clue: "下文『不拖泥帶水、效率極高』，推斷其行動力和執行力極其迅速果斷。" },
-        { id: 15, text: "經歷了多次失敗，他依然沒有灰心，反而更加發奮圖強。", word: "發奮圖強", options: ["放棄努力", "振作努力爭取好成績", "怨天尤人", "感到悲傷"], answer: 1, clue: "上文『沒有灰心』與『反而更加...』，說明他振作精神更加努力。" },
-        { id: 16, text: "這座古老的建築經過歲月的洗禮，顯得有些滄桑。", word: "滄桑", options: ["新穎漂亮", "歷經歲月變遷的古舊感", "繁華熱鬧", "堅固無比"], answer: 1, clue: "上文『古老建築、經過歲月洗禮』，推斷帶有歷史變遷與古舊的感觸。" }
+        { id: 9, text: "面對對手的挑釁，他始終保持沉默，不予理會。", word: "不予理會", options: ["熱情回應", "不加理睬", "非常生氣", "主動道歉"], answer: 1, clue: "上文『保持沉默』說明他不打算作任何回應與理睬。" },
+        { id: 10, text: "這場音樂會的票十分緊俏，開售不到五分鐘就被搶購一空。", word: "緊俏", options: ["貨源充足", "非常熱銷搶手", "價格便宜", "無人問津"], answer: 1, clue: "下文『五分鐘內被搶購一空』，顯示出門票熱銷受歡迎。" },
+        { id: 11, text: "討論會上大家各抒己見，提出了許多寶貴的意見。", word: "各抒己見", options: ["沉默不語", "各自發表自己的意見", "盲目認同他人", "互相爭吵"], answer: 1, clue: "下文『提出了許多寶貴意見』，說明大家各自說出想法。" },
+        { id: 12, text: "這幅畫作色彩絢麗，吸引了許多藝術愛好者駐足欣賞。", word: "駐足", options: ["停下腳步", "快速離開", "跑步前進", "大聲喊叫"], answer: 0, clue: "上下文『吸引愛好者欣賞』，推斷他們會停下腳步觀看。" },
+        { id: 13, text: "這個秘密他隱瞞了多年，直到今天才吐露真相。", word: "隱瞞", options: ["公開宣佈", "藏匿不讓人知道", "隨意編造", "忘記清楚"], answer: 1, clue: "下文『直到今天才吐露』，說明之前一直藏著不說。" },
+        { id: 14, text: "他辦事向來雷厲風行，絕不拖泥帶水，因此效率極高。", word: "雷厲風行", options: ["拖延時間", "執行果斷迅速", "猶豫不決", "聲音非常大"], answer: 1, clue: "下文『不拖泥帶水、效率極高』，推斷行動力迅速果斷。" },
+        { id: 15, text: "經歷了多次失敗，他依然沒有灰心，反而更加發奮圖強。", word: "發奮圖強", options: ["放棄努力", "振作努力爭取好成績", "怨天尤人", "感到悲傷"], answer: 1, clue: "上文『沒有灰心』與『反而更加...』，說明他振作努力。" },
+        { id: 16, text: "這座古老的建築經過歲月的洗禮，顯得有些滄桑。", word: "滄桑", options: ["新穎漂亮", "歷經滄海桑田的變化與古舊", "繁華熱鬧", "堅固無比"], answer: 1, clue: "上文『古老建築、經過歲月洗禮』，推斷帶有歷史變遷的古舊感。" }
       ],
       hard: [
-        { id: 17, text: "在困難面前，我們應該迎難而上，而不是畏縮不前。", word: "畏縮不前", options: ["勇敢前進", "因為害怕而退縮不前", "積極思考", "大步邁進"], answer: 1, clue: "上文『而不是...』對比前面的『迎難而上』，反推其意為害怕而不敢前進。" },
-        { id: 18, text: "這篇名著含義深邃，需要耐心地反覆閱讀才能體會箇中妙趣。", word: "深邃", options: ["淺顯易懂", "深奧幽深", "文字冗長", "內容枯燥"], answer: 1, clue: "下文『需要耐心反覆閱讀才能體會』，說明文章內容深奧並不簡單。" },
-        { id: 19, text: "聽到這個好消息，大家都喜不自勝，紛紛擁抱慶祝。", word: "喜不自勝", options: ["悲傷難過", "高興得無法控制自己", "非常害怕", "感到十分驚訝"], answer: 1, clue: "下文『擁抱慶祝』與上文『好消息』，說明高興歡喜到了極點。" },
-        { id: 20, text: "他雖然家境貧寒，但從不自卑，反而憑藉努力考上了理想的大學。", word: "自卑", options: ["自信滿滿", "看輕自己、感到不如人", "驕傲自大", "勇敢堅強"], answer: 1, clue: "上文『家境貧寒』與下文『從不...反而憑藉努力』，推斷自卑為輕視看低自己。" },
-        { id: 21, text: "這項新發明具有劃時代的意義，徹底改變了人類的生活方式。", word: "劃時代", options: ["開創新時代的", "過時的", "普通平庸的", "短暫一時的"], answer: 0, clue: "下文『徹底改變了人類生活方式』，說明其影響力具有開創新時代的價值。" },
-        { id: 22, text: "老教授說話條理分明，絲絲入扣，讓人聽得心服口服。", word: "絲絲入扣", options: ["混亂無章", "講話緊湊嚴密、合情合理", "聲音低沉", "速度極慢"], answer: 1, clue: "上文『條理分明』與下文『心服口服』，說明表達極具邏輯且合情合理。" },
-        { id: 23, text: "對於這項不合理的決定，大家都感到義憤填膺，紛紛表達抗議。", word: "義憤填膺", options: ["心中充滿正義的憤怒", "高興歡喜", "冷漠無動於衷", "害怕恐懼"], answer: 0, clue: "上下文『不合理的決定』與『表達抗議』，推斷心中充滿因正義而生的憤怒。" },
-        { id: 24, text: "經過長期的努力，他的研究終於取得了突破性的進展，令人矚目。", word: "矚目", options: ["不被關心", "吸引眾人的目光注意", "令人失望", "隱密不公開"], answer: 1, clue: "上文『突破性進展』，推斷成果必然會吸引大家的目光與關注。" }
+        { id: 17, text: "在困難面前，我們應該迎難而上，而不是畏縮不前。", word: "畏縮不前", options: ["勇敢前進", "因為害怕而退縮不前", "積極思考", "大步邁進"], answer: 1, clue: "上文『而不是...』對比『迎難而上』，反推其意為害怕退縮。" },
+        { id: 18, text: "這篇名著含義深邃，需要耐心地反覆閱讀才能體會箇中妙趣。", word: "深邃", options: ["淺顯易懂", "深奧幽深", "文字冗長", "內容枯燥"], answer: 1, clue: "下文『需要耐心反覆閱讀才能體會』，說明內容深奧不簡單。" },
+        { id: 19, text: "聽到這個好消息，大家都喜不自勝，紛紛擁抱慶祝。", word: "喜不自勝", options: ["悲傷難過", "高興得無法控制自己", "非常害怕", "感到十分驚訝"], answer: 1, clue: "下文『擁抱慶祝』與『好消息』，說明極度喜悅。" },
+        { id: 20, text: "他雖然家境貧寒，但從不自卑，反而憑藉努力考上了理想的大學。", word: "自卑", options: ["自信滿滿", "看輕自己、感到不如人", "驕傲自大", "勇敢堅強"], answer: 1, clue: "上文『家境貧寒』與下文『從不...反而憑藉努力』，推斷自卑為輕視自己。" },
+        { id: 21, text: "這項新發明具有劃時代的意義，徹底改變了人類的生活方式。", word: "劃時代", options: ["開創新時代的", "過時的", "普通平庸的", "短暫一時的"], answer: 0, clue: "下文『徹底改變了人類生活方式』，說明其影響力開創新時代。" },
+        { id: 22, text: "老教授說話條理分明，絲絲入扣，讓人聽得心服口服。", word: "絲絲入扣", options: ["混亂無章", "文章或言語緊湊嚴密、合情合理", "聲音低沉", "速度極慢"], answer: 1, clue: "上文『條理分明』與下文『心服口服』，說明表達極具邏輯與合情合理。" },
+        { id: 23, text: "對於這項不合理的決定，大家都感到義憤填膺，紛紛表達抗議。", word: "義憤填膺", options: ["心中充滿正義的憤怒", "高興歡喜", "冷漠無動於衷", "害怕恐懼"], answer: 0, clue: "上下文『不合理的決定』與『表達抗議』，推斷心中充滿正義的憤怒。" },
+        { id: 24, text: "經過長期的努力，他的研究終於取得了突破性的進展，令人矚目。", word: "矚目", options: ["不被關心", "吸引眾人的目光注意", "令人失望", "隱密不公開"], answer: 1, clue: "上文『突破性進展』，推斷會吸引大家的目光與關注。" }
       ]
     };
 
-    // 8-bit Minecraft 復古 Web Audio 音效合成器
+    // 音效合成器
     const playSound = (type) => {
       try {
         const ctx = new (window.AudioContext || window.webkitAudioContext)();
@@ -225,33 +138,29 @@
 
         if (type === 'click') {
           osc.type = 'square';
-          osc.frequency.setValueAtTime(140, ctx.currentTime);
-          gain.gain.setValueAtTime(0.08, ctx.currentTime);
+          osc.frequency.setValueAtTime(150, ctx.currentTime);
+          gain.gain.setValueAtTime(0.1, ctx.currentTime);
           osc.start();
           osc.stop(ctx.currentTime + 0.05);
         } else if (type === 'correct') {
           osc.type = 'triangle';
-          osc.frequency.setValueAtTime(261.63, ctx.currentTime); // C4
-          osc.frequency.setValueAtTime(329.63, ctx.currentTime + 0.08); // E4
-          osc.frequency.setValueAtTime(392.00, ctx.currentTime + 0.16); // G4
-          osc.frequency.setValueAtTime(523.25, ctx.currentTime + 0.24); // C5
-          gain.gain.setValueAtTime(0.15, ctx.currentTime);
+          osc.frequency.setValueAtTime(300, ctx.currentTime);
+          osc.frequency.exponentialRampToValueAtTime(600, ctx.currentTime + 0.15);
+          gain.gain.setValueAtTime(0.2, ctx.currentTime);
           osc.start();
-          osc.stop(ctx.currentTime + 0.35);
+          osc.stop(ctx.currentTime + 0.15);
         } else if (type === 'wrong') {
           osc.type = 'sawtooth';
           osc.frequency.setValueAtTime(180, ctx.currentTime);
-          osc.frequency.setValueAtTime(110, ctx.currentTime + 0.12);
-          gain.gain.setValueAtTime(0.15, ctx.currentTime);
+          osc.frequency.setValueAtTime(110, ctx.currentTime + 0.1);
+          gain.gain.setValueAtTime(0.2, ctx.currentTime);
           osc.start();
-          osc.stop(ctx.currentTime + 0.25);
+          osc.stop(ctx.currentTime + 0.2);
         }
-      } catch (e) {
-        // 忽略音效播放阻擋錯誤
-      }
+      } catch (e) {}
     };
 
-    // 遊戲狀態變數 (State)
+    // 遊戲狀態
     let state = {
       screen: 'welcome', // welcome, game, result, leaderboard
       playerName: '',
@@ -266,58 +175,45 @@
       leaderboardData: []
     };
 
-    // UI 畫面繪製主函數
+    // DOM 繪製主函數
     function render() {
       const app = document.getElementById('app');
 
       if (state.screen === 'welcome') {
         app.innerHTML = `
-          <div class="mc-panel p-5 md:p-8 text-slate-800 max-w-lg mx-auto w-full">
-            <div class="text-center mb-6">
-              <span class="text-4xl md:text-5xl">⛏️</span>
-              <h2 class="text-2xl md:text-3xl font-extrabold mt-2 text-amber-900 border-b-4 border-amber-900 pb-2">
-                進入語文冒險世界
-              </h2>
-            </div>
+          <div class="mc-panel p-6 md:p-8 text-slate-800 rounded-none shadow-2xl max-w-lg mx-auto w-full">
+            <h2 class="text-2xl md:text-3xl font-bold text-center mb-6 text-amber-900 border-b-4 border-amber-900 pb-2">
+              🎮 準備進入語文世界
+            </h2>
             
-            <div class="mb-5">
-              <label class="block text-slate-900 font-bold mb-2 text-sm md:text-base">
-                👤 輸入探險家名字 (學生姓名)：
-              </label>
+            <div class="mb-4">
+              <label class="block text-sm font-bold mb-2">輸入探險家名字：</label>
               <input type="text" id="playerNameInput" value="${state.playerName}" 
-                placeholder="例如：陳小明" 
-                class="w-full p-3 border-4 border-slate-800 bg-white text-black font-bold focus:outline-none focus:ring-2 focus:ring-amber-500 text-lg">
+                placeholder="例如：小明" 
+                class="w-full p-3 border-4 border-slate-700 bg-white text-black font-bold focus:outline-none">
             </div>
 
             <div class="mb-6">
-              <label class="block text-slate-900 font-bold mb-2 text-sm md:text-base">
-                🪜 選擇挑戰階梯 (難度分層)：
-              </label>
+              <label class="block text-sm font-bold mb-2">選擇難度階梯：</label>
               <div class="grid grid-cols-3 gap-2">
-                <button onclick="setDifficulty('easy')" 
-                  class="mc-button p-3 text-sm md:text-base font-bold flex flex-col items-center ${state.difficulty==='easy'?'bg-green-700 border-green-300 ring-4 ring-green-400':''}">
-                  <span class="text-lg">🟫</span>
-                  <span>泥土 (初級)</span>
+                <button onclick="setDifficulty('easy')" class="mc-button p-2 text-sm md:text-base ${state.difficulty==='easy'?'bg-amber-700 border-yellow-300':''}">
+                  泥土 (初級)
                 </button>
-                <button onclick="setDifficulty('medium')" 
-                  class="mc-button p-3 text-sm md:text-base font-bold flex flex-col items-center ${state.difficulty==='medium'?'bg-slate-600 border-cyan-300 ring-4 ring-cyan-400':''}">
-                  <span class="text-lg">⚙️</span>
-                  <span>鐵礦 (中級)</span>
+                <button onclick="setDifficulty('medium')" class="mc-button p-2 text-sm md:text-base ${state.difficulty==='medium'?'bg-slate-600 border-cyan-300':''}">
+                  鐵礦 (中級)
                 </button>
-                <button onclick="setDifficulty('hard')" 
-                  class="mc-button p-3 text-sm md:text-base font-bold flex flex-col items-center ${state.difficulty==='hard'?'bg-blue-700 border-blue-300 ring-4 ring-blue-400':''}">
-                  <span class="text-lg">💎</span>
-                  <span>鑽石 (高級)</span>
+                <button onclick="setDifficulty('hard')" class="mc-button p-2 text-sm md:text-base ${state.difficulty==='hard'?'bg-blue-600 border-blue-300':''}">
+                  鑽石 (高級)
                 </button>
               </div>
             </div>
 
             <div class="space-y-3">
-              <button onclick="startGame()" class="mc-button mc-button-green w-full py-4 text-xl font-black tracking-wide">
-                🚀 開始冒險挑戰 (共8題)
+              <button onclick="startGame()" class="mc-button w-full py-4 text-xl font-bold bg-green-600 border-green-300 hover:bg-green-500">
+                🚀 開始冒險 (8題)
               </button>
-              <button onclick="showLeaderboard()" class="mc-button mc-button-gold w-full py-3 text-lg font-bold">
-                🏆 查看全網跨裝置龍虎榜
+              <button onclick="showLeaderboard()" class="mc-button w-full py-3 text-lg font-bold bg-yellow-600 border-yellow-200">
+                🏆 查看全網龍虎榜
               </button>
             </div>
           </div>
@@ -326,44 +222,35 @@
         const q = state.questions[state.currentIndex];
         app.innerHTML = `
           <div class="mc-panel p-4 md:p-6 text-slate-900">
-            <!-- 頂部資訊列 -->
-            <div class="flex flex-wrap justify-between items-center mb-4 border-b-4 border-slate-400 pb-2 gap-2 text-sm md:text-base font-bold">
-              <span class="bg-slate-800 text-white px-2.5 py-1 rounded">👤 ${state.playerName}</span>
-              <span class="text-amber-900">進度: ${state.currentIndex + 1} / 8</span>
-              <span class="text-green-800">得分: ${state.score}</span>
-              <span class="text-blue-800">⏱️ ${state.timer} 秒</span>
+            <div class="flex justify-between items-center mb-4 border-b-2 border-slate-400 pb-2 text-sm md:text-lg">
+              <span class="font-bold">👤 ${state.playerName}</span>
+              <span class="font-bold text-amber-800">進度: ${state.currentIndex + 1} / 8</span>
+              <span class="font-bold text-green-800">得分: ${state.score}</span>
+              <span class="font-bold text-blue-800">⏱️ ${state.timer}s</span>
             </div>
 
-            <!-- 題目內文卡片 -->
-            <div class="bg-amber-50 border-4 border-amber-800 p-4 rounded mb-5 text-lg md:text-xl leading-relaxed shadow-inner">
-              ${q.text.replace(q.word, `<span class="bg-yellow-300 text-red-700 px-1.5 py-0.5 rounded font-black border-2 border-red-500 underline decoration-wavy">${q.word}</span>`)}
+            <div class="bg-amber-100 border-4 border-amber-800 p-4 rounded mb-6 text-lg md:text-xl leading-relaxed">
+              ${q.text.replace(q.word, `<span class="bg-yellow-300 text-red-700 px-1 font-bold underline decoration-wavy">${q.word}</span>`)}
             </div>
 
-            <p class="font-black text-slate-800 text-base md:text-lg mb-3">
-              請根據上文下理，推斷劃線詞語「<span class="text-red-700 font-black">${q.word}</span>」最正確的意思：
-            </p>
+            <p class="font-bold text-base md:text-lg mb-3">請根據上文下理，推斷劃線詞語「<span class="text-red-600">${q.word}</span>」的意思：</p>
 
-            <!-- 4 個選項按鈕 -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-5">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
               ${q.options.map((opt, idx) => `
                 <button onclick="selectOption(${idx})" 
-                  ${state.showClue ? 'disabled' : ''}
-                  class="mc-button p-3.5 text-left font-bold text-base md:text-lg flex items-center space-x-3 ${state.selectedOption===idx ? (idx===q.answer?'mc-button-green':'bg-red-700 border-red-300'):''}">
-                  <span class="bg-black text-white px-2 py-0.5 text-xs font-mono rounded"> ${String.fromCharCode(65+idx)} </span>
+                  class="mc-button p-3 text-left font-bold text-base md:text-lg flex items-center space-x-2 ${state.selectedOption===idx?'bg-blue-600':''}">
+                  <span class="bg-black text-white px-2 py-0.5 text-xs"> ${String.fromCharCode(65+idx)} </span>
                   <span>${opt}</span>
                 </button>
               `).join('')}
             </div>
 
-            <!-- 線索解析與下一題按鈕 -->
             ${state.showClue ? `
-              <div class="bg-blue-50 border-4 border-blue-600 p-4 text-blue-950 mb-4 rounded shadow-md">
-                <p class="font-black text-blue-900 border-b-2 border-blue-300 pb-1 mb-2 text-base md:text-lg flex items-center">
-                  <span>💡 上文下理線索解析：</span>
-                </p>
-                <p class="text-sm md:text-base leading-relaxed">${q.clue}</p>
+              <div class="bg-blue-100 border-4 border-blue-600 p-4 text-blue-900 mb-4 rounded">
+                <p class="font-bold border-b border-blue-400 pb-1 mb-1">💡 上文下理線索解析：</p>
+                <p class="text-sm md:text-base">${q.clue}</p>
               </div>
-              <button onclick="nextQuestion()" class="mc-button mc-button-green w-full py-3.5 font-black text-xl">
+              <button onclick="nextQuestion()" class="mc-button w-full py-3 bg-green-600 font-bold text-lg">
                 下一題 ➔
               </button>
             ` : ''}
@@ -372,54 +259,51 @@
       } else if (state.screen === 'result') {
         app.innerHTML = `
           <div class="mc-panel p-6 text-center text-slate-900 max-w-lg mx-auto w-full">
-            <h2 class="text-3xl md:text-4xl font-black mb-3 text-amber-900">🎉 冒險順利完成！</h2>
-            <p class="text-slate-700 font-bold mb-5">恭喜你完成閱讀策略「詞意推斷」考驗！</p>
-
-            <div class="bg-amber-50 border-4 border-amber-800 p-4 mb-6 rounded text-left space-y-2 text-base md:text-lg font-bold">
-              <p>👤 探險家姓名：<strong class="text-slate-900">${state.playerName}</strong></p>
-              <p>階梯難度：<span class="px-2 py-0.5 bg-slate-200 text-slate-800 rounded border border-slate-400">${state.difficulty==='easy'?'泥土 (初級)':state.difficulty==='medium'?'鐵礦 (中級)':'鑽石 (高級)'}</span></p>
-              <p>⭐ 最終得分：<strong class="text-green-700 text-2xl">${state.score}</strong> / 800 分</p>
-              <p>⏱️ 總共耗時：<strong class="text-blue-800">${state.timer} 秒</strong></p>
+            <h2 class="text-3xl font-bold mb-4">🎉 冒險完成！</h2>
+            <div class="bg-amber-100 border-4 border-amber-800 p-4 mb-6 rounded text-left space-y-2 text-lg">
+              <p>👤 探險家：<strong>${state.playerName}</strong></p>
+              <p>⭐ 最終得分：<strong class="text-green-700 text-2xl">${state.score}</strong> / 800</p>
+              <p>⏱️ 總共耗時：<strong>${state.timer} 秒</strong></p>
             </div>
 
             <div class="space-y-3">
-              <button onclick="showLeaderboard()" class="mc-button mc-button-gold w-full py-3.5 font-black text-lg">
+              <button onclick="showLeaderboard()" class="mc-button w-full py-3 bg-yellow-600 font-bold text-lg">
                 🏆 上傳成績並查看全網龍虎榜
               </button>
-              <button onclick="state.screen='welcome'; render();" class="mc-button w-full py-3 font-bold text-lg">
-                🔄 返回主選單
+              <button onclick="goHome()" class="mc-button w-full py-3 bg-slate-500 font-bold text-lg">
+                🔄 返回主頁
               </button>
             </div>
           </div>
         `;
       } else if (state.screen === 'leaderboard') {
         app.innerHTML = `
-          <div class="mc-panel p-5 md:p-6 text-slate-900 max-w-xl mx-auto w-full">
-            <h2 class="text-2xl md:text-3xl font-black text-center mb-2 text-amber-900">
+          <div class="mc-panel p-6 text-slate-900 max-w-xl mx-auto w-full">
+            <h2 class="text-2xl md:text-3xl font-bold text-center mb-4 text-yellow-800">
               🏆 全網跨裝置龍虎榜 (TOP 5)
             </h2>
-            <p class="text-xs md:text-sm text-center mb-4 font-bold ${isCloudConnected ? 'text-green-700' : 'text-amber-700'}">
-              ${isCloudConnected ? '🌐 已連線至 Firebase 雲端資料庫 (全網同步中)' : '📁 目前為本機紀錄模式'}
+            <p class="text-xs text-center mb-4 ${isCloudConnected ? 'text-green-700 font-bold' : 'text-red-600 font-bold'}">
+              ${isCloudConnected ? '● 已成功連線至雲端資料庫 (全網同步中)' : '⚠️ 雲端未設定，目前顯示本機紀錄'}
             </p>
 
             <div class="space-y-2 mb-6">
-              ${state.leaderboardData.length === 0 ? '<p class="text-center text-slate-600 py-6 font-bold">資料加載中 / 暫無數據...</p>' : ''}
+              ${state.leaderboardData.length === 0 ? '<p class="text-center text-slate-600 py-4">載入中 / 暫無資料...</p>' : ''}
               ${state.leaderboardData.map((item, idx) => `
-                <div class="flex justify-between items-center bg-amber-50 border-3 border-amber-900 p-3 font-bold text-sm md:text-base rounded shadow-sm">
+                <div class="flex justify-between items-center bg-amber-100 border-2 border-amber-800 p-3 font-bold text-sm md:text-base">
                   <div class="flex items-center space-x-2">
-                    <span class="text-xl w-7 text-center font-black">${idx === 0 ? '🥇' : idx === 1 ? '🥈' : idx === 2 ? '🥉' : `#${idx+1}`}</span>
-                    <span class="text-slate-900 font-extrabold">${item.name || '無名氏'}</span>
-                    <span class="text-xs px-2 py-0.5 bg-slate-200 text-slate-800 border border-slate-400 rounded">${item.difficulty === 'easy' ? '泥土' : item.difficulty === 'medium' ? '鐵礦' : '鑽石'}</span>
+                    <span class="text-lg w-6">${idx === 0 ? '🥇' : idx === 1 ? '🥈' : idx === 2 ? '🥉' : `#${idx+1}`}</span>
+                    <span>${item.name || '無名氏'}</span>
+                    <span class="text-xs px-2 py-0.5 bg-slate-300 text-black rounded">${item.difficulty === 'easy' ? '泥土' : item.difficulty === 'medium' ? '鐵礦' : '鑽石'}</span>
                   </div>
                   <div class="text-right">
-                    <span class="text-green-700 text-base md:text-lg font-black">${item.score}分</span>
-                    <span class="text-xs text-slate-500 ml-1">(${item.time}s)</span>
+                    <span class="text-green-700">${item.score}分</span>
+                    <span class="text-xs text-slate-500 ml-2">(${item.time}s)</span>
                   </div>
                 </div>
               `).join('')}
             </div>
 
-            <button onclick="state.screen='welcome'; render();" class="mc-button mc-button-blue w-full py-3.5 font-black text-lg">
+            <button onclick="goHome()" class="mc-button w-full py-3 bg-blue-600 font-bold text-lg">
               🏠 返回主頁
             </button>
           </div>
@@ -427,7 +311,13 @@
       }
     }
 
-    // 綁定全域互動函數
+    // 將互動邏輯註冊至全域 (window)
+    window.goHome = () => {
+      playSound('click');
+      state.screen = 'welcome';
+      render();
+    };
+
     window.setDifficulty = (diff) => {
       playSound('click');
       state.difficulty = diff;
@@ -437,7 +327,7 @@
     window.startGame = () => {
       const nameInput = document.getElementById('playerNameInput')?.value.trim();
       if (!nameInput) {
-        alert('請先輸入探險家名字 (學生姓名)！');
+        alert('請先輸入探險家名字！');
         return;
       }
       playSound('click');
@@ -454,7 +344,7 @@
       state.timerInterval = setInterval(() => {
         state.timer++;
         const timerEl = document.querySelector('#app .text-blue-800');
-        if (timerEl) timerEl.innerText = `⏱️ ${state.timer} 秒`;
+        if (timerEl) timerEl.innerText = `⏱️ ${state.timer}s`;
       }, 1000);
 
       render();
@@ -490,7 +380,6 @@
       }
     };
 
-    // 寫入成績 (雲端 Firestore + 本機 localStorage 雙重備份)
     async function saveScore() {
       const record = {
         name: state.playerName,
@@ -500,13 +389,11 @@
         timestamp: new Date().getTime()
       };
 
-      // 1. 本機快取備份
       let localScores = JSON.parse(localStorage.getItem('mc_chinese_scores') || '[]');
       localScores.push(record);
       localScores.sort((a,b) => b.score - a.score || a.time - b.time);
       localStorage.setItem('mc_chinese_scores', JSON.stringify(localScores.slice(0, 10)));
 
-      // 2. 寫入 Firebase 雲端資料庫
       if (isCloudConnected && db) {
         try {
           await addDoc(collection(db, "leaderboard"), {
@@ -516,14 +403,12 @@
             difficulty: record.difficulty,
             createdAt: serverTimestamp()
           });
-          console.log("成績已順利上傳至全網 Firebase 雲端資料庫！");
         } catch (e) {
-          console.error("雲端寫入遇到阻礙，已自動儲存至本機:", e);
+          console.error("雲端寫入失敗：", e);
         }
       }
     }
 
-    // 撈取全網 TOP 5 高分榜
     window.showLeaderboard = async () => {
       playSound('click');
       state.screen = 'leaderboard';
@@ -532,21 +417,15 @@
 
       if (isCloudConnected && db) {
         try {
-          // 從雲端 Firestore 取出最高分的 5 筆紀錄
           const q = query(collection(db, "leaderboard"), orderBy("score", "desc"), limit(5));
           const querySnapshot = await getDocs(q);
           const cloudData = [];
           querySnapshot.forEach((doc) => {
             cloudData.push(doc.data());
           });
-          
-          if (cloudData.length > 0) {
-            state.leaderboardData = cloudData;
-          } else {
-            fallbackLocalLeaderboard();
-          }
+          state.leaderboardData = cloudData;
         } catch (e) {
-          console.error("雲端撈取失敗，切換回本機資料:", e);
+          console.error("雲端讀取失敗，讀取本機紀錄：", e);
           fallbackLocalLeaderboard();
         }
       } else {
@@ -560,7 +439,7 @@
       state.leaderboardData = local.slice(0, 5);
     }
 
-    // 初始化繪製
+    // 初始渲染遊戲畫面
     render();
   </script>
 </body>
