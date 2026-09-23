@@ -1,1330 +1,567 @@
 <!DOCTYPE html>
-<html lang="zh-Hant">
+<html lang="zh-HK">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>方塊語文大冒險：詞意推斷大師</title>
-    <!-- Tailwind CSS CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Google Fonts for Pixel & Chinese Style -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700;900&family=Press+Start+2P&family=Silkscreen&display=swap" rel="stylesheet">
-    
-    <style>
-        :root {
-            --pixel-size: 4px;
-            --dirt-dark: #3b2818;
-            --dirt-main: #573d26;
-            --dirt-light: #866043;
-            --grass-top: #5c8e32;
-            --iron-main: #b3b3b3;
-            --diamond-main: #4beddb;
-            --diamond-dark: #1b7a70;
-            --gold-accent: #fbc02d;
-        }
-
-        body {
-            font-family: 'Noto Sans TC', sans-serif;
-            background-color: #121216;
-            background-image: 
-                radial-gradient(#262633 15%, transparent 16%),
-                radial-gradient(#1a1a24 15%, transparent 16%);
-            background-size: 32px 32px;
-            background-position: 0 0, 16px 16px;
-            color: #ffffff;
-            user-select: none;
-            touch-action: manipulation;
-        }
-
-        .pixel-font {
-            font-family: 'Press Start 2P', 'Silkscreen', cursive, sans-serif;
-        }
-
-        /* Minecraft Pixelated Border Utility */
-        .pixel-box {
-            border: 4px solid #000;
-            box-shadow: 
-                inset -4px -4px 0px 0px rgba(0,0,0,0.4),
-                inset 4px 4px 0px 0px rgba(255,255,255,0.2);
-            position: relative;
-        }
-
-        .pixel-box-dirt {
-            background-color: var(--dirt-main);
-            border-color: #24160c;
-        }
-
-        .pixel-box-stone {
-            background-color: #4a4a52;
-            border-color: #222226;
-        }
-
-        .pixel-box-iron {
-            background-color: #787882;
-            border-color: #383840;
-        }
-
-        .pixel-box-diamond {
-            background-color: #1a5652;
-            border-color: #0b2b29;
-        }
-
-        .pixel-btn {
-            position: relative;
-            transition: transform 0.1s, filter 0.1s;
-            cursor: pointer;
-            border: 4px solid #000;
-            box-shadow: inset -4px -4px 0px 0px rgba(0,0,0,0.4), inset 4px 4px 0px 0px rgba(255,255,255,0.3);
-            text-shadow: 2px 2px 0px #000;
-        }
-
-        .pixel-btn:hover {
-            transform: translateY(-2px);
-            filter: brightness(1.1);
-        }
-
-        .pixel-btn:active {
-            transform: translateY(2px);
-            box-shadow: inset 4px 4px 0px 0px rgba(0,0,0,0.5);
-        }
-
-        .btn-dirt { background-color: var(--dirt-light); color: #ffe6d0; }
-        .btn-iron { background-color: #a0a0b0; color: #ffffff; }
-        .btn-diamond { background-color: var(--diamond-main); color: #042e2b; text-shadow: none; font-weight: bold; }
-        .btn-green { background-color: #48a23f; color: #ffffff; }
-        .btn-red { background-color: #c62828; color: #ffffff; }
-
-        /* Hearts visual */
-        .heart-icon {
-            display: inline-block;
-            width: 24px;
-            height: 24px;
-            background-color: #e53935;
-            clip-path: polygon(50% 15%, 80% 0, 100% 35%, 100% 70%, 50% 100%, 0 70%, 0 35%, 20% 0);
-        }
-        
-        .heart-icon.empty {
-            background-color: #555555;
-        }
-
-        /* Animation utilities */
-        @keyframes floatAnim {
-            0%, 100% { transform: translateY(0px); }
-            50% { transform: translateY(-6px); }
-        }
-
-        .animate-float {
-            animation: floatAnim 3s ease-in-out infinite;
-        }
-
-        @keyframes shake {
-            0%, 100% { transform: translateX(0); }
-            20%, 60% { transform: translateX(-6px); }
-            40%, 80% { transform: translateX(6px); }
-        }
-
-        .animate-shake {
-            animation: shake 0.4s ease-in-out;
-        }
-
-        /* Custom scrollbar */
-        ::-webkit-scrollbar {
-            width: 10px;
-        }
-        ::-webkit-scrollbar-track {
-            background: #1a1a24;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #4a4a52;
-            border: 2px solid #000;
-        }
-    </style>
-</head>
-<body class="min-h-screen flex flex-col justify-between items-center p-2 md:p-4">
-
-    <!-- Header / Navbar -->
-    <header class="w-full max-w-4xl flex flex-col sm:flex-row justify-between items-center gap-3 p-3 pixel-box pixel-box-stone rounded-none mb-4">
-        <div class="flex items-center gap-3 cursor-pointer" onclick="game.showScreen('main_menu')">
-            <div class="w-10 h-10 bg-green-600 border-2 border-black flex items-center justify-center text-2xl shadow-inner">
-                ⛏️
-            </div>
-            <div>
-                <h1 class="text-xl md:text-2xl font-black tracking-wide text-yellow-400 drop-shadow-[2px_2px_0_#000]">
-                    方塊語文大冒險
-                </h1>
-                <p class="text-xs text-gray-300">四年級閱讀策略：透過上文下理推斷詞意</p>
-            </div>
-        </div>
-
-        <div class="flex items-center gap-2">
-            <!-- Firebase Connection Status Badge -->
-            <div id="statusBadge" onclick="game.openFirebaseModal()" class="px-3 py-1 text-xs pixel-box bg-gray-800 text-yellow-300 flex items-center gap-2 cursor-pointer hover:bg-gray-700" title="點擊檢視/設定 Firebase 排行榜連線">
-                <span id="statusDot" class="w-2.5 h-2.5 rounded-full bg-yellow-500 inline-block animate-pulse"></span>
-                <span id="statusText">載入資料庫中...</span>
-            </div>
-
-            <button onclick="soundFX.toggleMute()" id="muteBtn" class="p-2 pixel-btn bg-gray-700 text-sm" title="聲音開關">
-                🔊
-            </button>
-        </div>
-    </header>
-
-    <!-- Main Game Container -->
-    <main id="appContainer" class="w-full max-w-4xl flex-grow flex flex-col items-center justify-center relative">
-
-        <!-- 1. MAIN MENU SCREEN -->
-        <section id="screen_main_menu" class="w-full flex flex-col items-center text-center py-6 px-4 space-y-6">
-            <div class="pixel-box pixel-box-dirt p-6 w-full max-w-2xl animate-float">
-                <div class="text-4xl md:text-5xl my-2">🧱📖💎</div>
-                <h2 class="text-2xl md:text-3xl font-bold text-yellow-300 drop-shadow-[2px_2px_0_#000] mb-2">
-                    成為詞意推斷大師！
-                </h2>
-                <p class="text-gray-200 text-sm md:text-base leading-relaxed mb-4">
-                    在語文世界裡，遇到不懂的詞語時，不需要急著查字典！<br>
-                    觀察文章的<span class="text-green-400 font-bold">「上文線索」</span>與<span class="text-yellow-400 font-bold">「下文線索」</span>，就能像挖掘寶藏一樣推算出正確詞意！
-                </p>
-            </div>
-
-            <div class="w-full max-w-md flex flex-col gap-4">
-                <button onclick="game.showScreen('select_difficulty')" class="pixel-btn btn-dirt py-4 text-xl font-bold rounded-none flex items-center justify-center gap-3">
-                    <span>▶️</span> 開始採礦冒險
-                </button>
-                <button onclick="game.openLeaderboard()" class="pixel-btn btn-iron py-3 text-lg font-bold rounded-none flex items-center justify-center gap-3">
-                    <span>🏆</span> 冒險龍虎榜
-                </button>
-                <button onclick="game.openGuideModal()" class="pixel-btn bg-yellow-700 text-white py-3 text-lg font-bold rounded-none flex items-center justify-center gap-3">
-                    <span>💡</span> 閱讀策略秘笈
-                </button>
-                <button onclick="game.openFirebaseModal()" class="pixel-btn bg-gray-800 text-gray-300 py-2 text-xs rounded-none flex items-center justify-center gap-2">
-                    <span>⚙️</span> GitHub Pages 龍虎榜連線設定 / 排錯
-                </button>
-            </div>
-        </section>
-
-        <!-- 2. DIFFICULTY SELECT SCREEN -->
-        <section id="screen_select_difficulty" class="hidden w-full flex flex-col items-center py-6 px-4 space-y-6">
-            <h2 class="text-2xl font-bold text-yellow-400 drop-shadow-[2px_2px_0_#000] flex items-center gap-2">
-                <span>⛏️</span> 選擇冒險難度
-            </h2>
-
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 w-full max-w-3xl">
-                <!-- Dirt Level -->
-                <div onclick="game.startGame('dirt')" class="pixel-box pixel-box-dirt p-5 flex flex-col items-center text-center cursor-pointer hover:scale-105 transition-transform">
-                    <div class="w-16 h-16 bg-amber-800 border-4 border-black mb-3 flex items-center justify-center text-3xl">🟫</div>
-                    <h3 class="text-xl font-bold text-yellow-300 mb-1">泥土階 (初級)</h3>
-                    <p class="text-xs text-gray-300 mb-4">基礎情境詞語推斷<br>(適合 4 年級初學者)</p>
-                    <span class="mt-auto px-4 py-2 pixel-btn btn-dirt text-sm font-bold w-full">進入採礦 (8題)</span>
-                </div>
-
-                <!-- Iron Level -->
-                <div onclick="game.startGame('iron')" class="pixel-box pixel-box-iron p-5 flex flex-col items-center text-center cursor-pointer hover:scale-105 transition-transform">
-                    <div class="w-16 h-16 bg-gray-400 border-4 border-black mb-3 flex items-center justify-center text-3xl">🩶</div>
-                    <h3 class="text-xl font-bold text-white mb-1">鐵礦階 (中級)</h3>
-                    <p class="text-xs text-gray-200 mb-4">進階情境與常見成語<br>(考驗前後對比線索)</p>
-                    <span class="mt-auto px-4 py-2 pixel-btn btn-iron text-sm font-bold w-full">進入採礦 (8題)</span>
-                </div>
-
-                <!-- Diamond Level -->
-                <div onclick="game.startGame('diamond')" class="pixel-box pixel-box-diamond p-5 flex flex-col items-center text-center cursor-pointer hover:scale-105 transition-transform">
-                    <div class="w-16 h-16 bg-cyan-500 border-4 border-black mb-3 flex items-center justify-center text-3xl">💎</div>
-                    <h3 class="text-xl font-bold text-cyan-300 mb-1">鑽石階 (高級)</h3>
-                    <p class="text-xs text-gray-200 mb-4">高階成語與深層文意推斷<br>(挑戰終極詞意大師)</p>
-                    <span class="mt-auto px-4 py-2 pixel-btn btn-diamond text-sm font-bold w-full">進入採礦 (8題)</span>
-                </div>
-            </div>
-
-            <button onclick="game.showScreen('main_menu')" class="pixel-btn bg-gray-700 text-white px-6 py-2 text-sm mt-4">
-                ⬅️ 返回主選單
-            </button>
-        </section>
-
-        <!-- 3. GAMEPLAY SCREEN -->
-        <section id="screen_gameplay" class="hidden w-full flex flex-col items-center space-y-4">
-            <!-- Game HUD / Status Bar -->
-            <div class="w-full flex justify-between items-center pixel-box pixel-box-stone p-3">
-                <!-- Hearts -->
-                <div class="flex items-center gap-1" id="heartsContainer">
-                    <span class="heart-icon"></span>
-                    <span class="heart-icon"></span>
-                    <span class="heart-icon"></span>
-                </div>
-
-                <!-- Progress / Durability -->
-                <div class="flex items-center gap-2">
-                    <span class="text-xs text-gray-300">方塊進度:</span>
-                    <span id="questionProgress" class="font-bold text-yellow-300 pixel-font">1/8</span>
-                </div>
-
-                <!-- Score -->
-                <div class="flex items-center gap-2">
-                    <span class="text-xs text-gray-300">積分:</span>
-                    <span id="currentScore" class="font-bold text-green-400 text-lg pixel-font">0</span>
-                </div>
-            </div>
-
-            <!-- Question Card -->
-            <div id="questionCard" class="w-full pixel-box pixel-box-dirt p-5 md:p-6 flex flex-col space-y-4">
-                <div class="flex justify-between items-center border-b border-amber-900/60 pb-2">
-                    <span id="diffTag" class="px-2 py-0.5 text-xs font-bold bg-amber-900 text-amber-200 border border-black">泥土階</span>
-                    <span class="text-xs text-yellow-200">💡 提示：仔細觀察底線詞語前後的句子！</span>
-                </div>
-
-                <!-- Sentence with Highlighted Target Word -->
-                <div class="bg-black/40 p-4 border-2 border-black rounded-none">
-                    <p id="sentenceText" class="text-base md:text-lg leading-relaxed text-gray-100">
-                        <!-- Filled by JS -->
-                    </p>
-                </div>
-
-                <!-- Question Prompt -->
-                <div class="text-yellow-300 font-bold text-sm md:text-base flex items-center gap-2">
-                    <span>🔍</span> 請問句中劃底線的詞語「<span id="targetWordText" class="text-cyan-300 underline font-extrabold"></span>」最可能是什麼意思？
-                </div>
-
-                <!-- Option Buttons (A, B, C, D) -->
-                <div id="optionsContainer" class="grid grid-cols-1 md:grid-cols-2 gap-3 pt-2">
-                    <!-- Dynamically created option buttons -->
-                </div>
-            </div>
-        </section>
-
-        <!-- 4. EXPLANATION MODAL (Post Answer) -->
-        <div id="explanationModal" class="hidden fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4">
-            <div class="pixel-box pixel-box-stone w-full max-w-2xl p-6 flex flex-col space-y-4 max-h-[90vh] overflow-y-auto">
-                <div id="resultHeader" class="text-center py-2 text-2xl font-black rounded-none">
-                    <!-- Correct / Incorrect Header -->
-                </div>
-
-                <div class="space-y-3 bg-gray-900/90 p-4 border-2 border-black text-sm md:text-base">
-                    <div>
-                        <span class="text-xs font-bold text-gray-400 block mb-1">🎯 目標詞語：</span>
-                        <span id="expTargetWord" class="text-lg font-bold text-cyan-300"></span>
-                    </div>
-                    <div>
-                        <span class="text-xs font-bold text-gray-400 block mb-1">📖 正確含意：</span>
-                        <span id="expCorrectMeaning" class="text-green-400 font-bold"></span>
-                    </div>
-
-                    <!-- Context Clues Breakdown -->
-                    <div class="border-t border-gray-700 pt-3 mt-3 space-y-2">
-                        <h4 class="text-yellow-400 font-bold flex items-center gap-2">
-                            <span>🧩</span> 上下文線索推論解析：
-                        </h4>
-                        
-                        <div class="bg-amber-950/40 border-l-4 border-green-500 p-2.5 rounded-none">
-                            <span class="text-xs font-bold text-green-400 block">🟢 上文線索 (前文暗示)：</span>
-                            <p id="expClueBefore" class="text-gray-200 text-xs md:text-sm mt-0.5"></p>
-                        </div>
-
-                        <div class="bg-amber-950/40 border-l-4 border-yellow-500 p-2.5 rounded-none">
-                            <span class="text-xs font-bold text-yellow-400 block">🟡 下文線索 (後文補充)：</span>
-                            <p id="expClueAfter" class="text-gray-200 text-xs md:text-sm mt-0.5"></p>
-                        </div>
-
-                        <div class="bg-blue-950/40 border-l-4 border-cyan-400 p-2.5 rounded-none">
-                            <span class="text-xs font-bold text-cyan-300 block">💡 綜合推算策略：</span>
-                            <p id="expStrategy" class="text-gray-200 text-xs md:text-sm mt-0.5"></p>
-                        </div>
-                    </div>
-                </div>
-
-                <button onclick="game.nextQuestion()" class="pixel-btn btn-green w-full py-3 text-lg font-bold">
-                    打破下一個方塊 ⛏️ (繼續)
-                </button>
-            </div>
-        </div>
-
-        <!-- 5. GAME OVER / RESULT SCREEN -->
-        <section id="screen_game_over" class="hidden w-full flex flex-col items-center py-6 px-4 space-y-6">
-            <div class="pixel-box pixel-box-stone p-6 w-full max-w-xl text-center space-y-4">
-                <div id="gameOverIcon" class="text-5xl">🏆</div>
-                <h2 id="gameOverTitle" class="text-3xl font-black text-yellow-400 drop-shadow-[2px_2px_0_#000]">
-                    冒險完成！
-                </h2>
-
-                <div class="bg-black/50 p-4 border-2 border-black space-y-2 text-left text-sm md:text-base">
-                    <div class="flex justify-between">
-                        <span class="text-gray-300">挑戰難度：</span>
-                        <span id="resDiff" class="font-bold text-yellow-300"></span>
-                    </div>
-                    <div class="flex justify-between">
-                        <span class="text-gray-300">挖掘方塊答對率：</span>
-                        <span id="resAccuracy" class="font-bold text-green-400"></span>
-                    </div>
-                    <div class="flex justify-between text-lg border-t border-gray-700 pt-2">
-                        <span class="text-yellow-400 font-bold">最終獲得總積分：</span>
-                        <span id="resFinalScore" class="font-bold text-yellow-300 text-2xl pixel-font"></span>
-                    </div>
-                </div>
-
-                <!-- Submit High Score Section -->
-                <div class="border-t border-gray-700 pt-4 space-y-3">
-                    <h3 class="text-sm font-bold text-gray-200">登錄冒險龍虎榜</h3>
-                    <div class="flex gap-2">
-                        <input type="text" id="playerNameInput" maxlength="12" placeholder="輸入你的勇者名字..." 
-                            class="flex-grow p-2.5 bg-gray-900 border-2 border-black text-white text-sm focus:outline-none focus:border-yellow-400">
-                        <button onclick="game.submitScore()" id="submitBtn" class="pixel-btn btn-green px-5 py-2 text-sm font-bold">
-                            送出紀錄
-                        </button>
-                    </div>
-                    <p id="submitNotice" class="text-xs text-gray-400 text-left"></p>
-                </div>
-            </div>
-
-            <div class="flex gap-4">
-                <button onclick="game.showScreen('select_difficulty')" class="pixel-btn btn-dirt px-6 py-2.5 text-sm font-bold">
-                    🔄 再次挑戰
-                </button>
-                <button onclick="game.openLeaderboard()" class="pixel-btn btn-iron px-6 py-2.5 text-sm font-bold">
-                    🏆 觀看龍虎榜
-                </button>
-            </div>
-        </section>
-
-        <!-- 6. LEADERBOARD MODAL -->
-        <div id="leaderboardModal" class="hidden fixed inset-0 bg-black/85 z-50 flex items-center justify-center p-3 md:p-6">
-            <div class="pixel-box pixel-box-stone w-full max-w-2xl p-5 flex flex-col space-y-4 max-h-[90vh]">
-                <div class="flex justify-between items-center border-b border-gray-700 pb-3">
-                    <h3 class="text-xl font-bold text-yellow-400 flex items-center gap-2">
-                        <span>🏆</span> 冒險龍虎榜 (Top 5)
-                    </h3>
-                    <button onclick="game.closeLeaderboard()" class="text-gray-400 hover:text-white font-bold text-xl px-2">✕</button>
-                </div>
-
-                <!-- Filter Tabs -->
-                <div class="flex gap-2 text-xs md:text-sm">
-                    <button onclick="game.renderLeaderboard('all')" id="tab_all" class="px-3 py-1.5 pixel-btn btn-iron font-bold">全部難度</button>
-                    <button onclick="game.renderLeaderboard('dirt')" id="tab_dirt" class="px-3 py-1.5 pixel-btn bg-amber-900 text-amber-100 font-bold">泥土階</button>
-                    <button onclick="game.renderLeaderboard('iron')" id="tab_iron" class="px-3 py-1.5 pixel-btn bg-gray-600 text-white font-bold">鐵礦階</button>
-                    <button onclick="game.renderLeaderboard('diamond')" id="tab_diamond" class="px-3 py-1.5 pixel-btn bg-cyan-800 text-cyan-100 font-bold">鑽石階</button>
-                </div>
-
-                <!-- Leaderboard Table -->
-                <div class="bg-black/60 border-2 border-black overflow-y-auto flex-grow p-2">
-                    <table class="w-full text-left border-collapse text-xs md:text-sm">
-                        <thead>
-                            <tr class="border-b border-gray-700 text-yellow-400">
-                                <th class="p-2">名次</th>
-                                <th class="p-2">勇者姓名</th>
-                                <th class="p-2">難度</th>
-                                <th class="p-2 text-right">總分數</th>
-                                <th class="p-2 text-right">時間</th>
-                            </tr>
-                        </thead>
-                        <tbody id="leaderboardList">
-                            <!-- Rows inserted by JS -->
-                        </tbody>
-                    </table>
-                </div>
-
-                <!-- DB Mode Info Footer -->
-                <div class="flex justify-between items-center text-xs text-gray-400 border-t border-gray-700 pt-2">
-                    <span id="lbModeNotice">資料庫連線檢查中...</span>
-                    <button onclick="game.openFirebaseModal()" class="text-yellow-400 underline hover:text-yellow-300">
-                        ⚙️ Firebase 設定/排錯
-                    </button>
-                </div>
-            </div>
-        </div>
-
-        <!-- 7. STRATEGY GUIDE MODAL -->
-        <div id="guideModal" class="hidden fixed inset-0 bg-black/85 z-50 flex items-center justify-center p-4">
-            <div class="pixel-box pixel-box-stone w-full max-w-2xl p-6 flex flex-col space-y-4 max-h-[90vh] overflow-y-auto">
-                <div class="flex justify-between items-center border-b border-gray-700 pb-2">
-                    <h3 class="text-xl font-bold text-yellow-400">💡 詞意推斷：上文下理推算策略秘笈</h3>
-                    <button onclick="game.closeGuideModal()" class="text-gray-400 hover:text-white font-bold text-xl">✕</button>
-                </div>
-
-                <div class="space-y-4 text-xs md:text-sm text-gray-200 leading-relaxed">
-                    <div class="bg-amber-950/60 p-3 border border-amber-800">
-                        <h4 class="font-bold text-yellow-300 mb-1">1. 什麼是「上文下理」？</h4>
-                        <p>文章中的詞語不是孤立存在的！「上文」指目標詞語<b>前面</b>的句子，「下理 (下文)」指目標詞語<b>後面</b>的句子。</p>
-                    </div>
-
-                    <div class="bg-gray-900 p-3 border border-gray-700">
-                        <h4 class="font-bold text-green-400 mb-1">2. 三大推論偵探招式：</h4>
-                        <ul class="list-disc list-inside space-y-1.5 text-gray-300">
-                            <li><b class="text-white">因果線索：</b>看看前文是否寫出了原因，導致後面出現這個詞語的結果。</li>
-                            <li><b class="text-white">對比線索：</b>尋找「雖然……但是……」、「反而」等轉折詞，推算相反意思。</li>
-                            <li><b class="text-white">解釋與舉例線索：</b>後文往往會對前面的難懂詞語進行詳細動作描述或補充解釋。</li>
-                        </ul>
-                    </div>
-
-                    <div class="bg-blue-950/60 p-3 border border-blue-800">
-                        <h4 class="font-bold text-cyan-300 mb-1">3. 實戰示範：</h4>
-                        <p class="italic text-gray-300 mb-1">「小明第一次在全校面前演講，緊張得<u>忐忑不安</u>，連手都在發抖。」</p>
-                        <p>🟢 <b>上文線索：</b>「第一次全校演講」、「緊張」</p>
-                        <p>🟡 <b>下文線索：</b>「手都在發抖」</p>
-                        <p>💡 <b>推論結果：</b>由「緊張」與「手發抖」，可知「忐忑不安」是指<b>心裡七上八下、非常不安恐懼</b>。
-                    </div>
-                </div>
-
-                <button onclick="game.closeGuideModal()" class="pixel-btn btn-dirt w-full py-2.5 font-bold text-sm">
-                    明白了，準備去採礦！
-                </button>
-            </div>
-        </div>
-
-        <!-- 8. FIREBASE DEBUG / SETUP MODAL -->
-        <div id="firebaseModal" class="hidden fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4">
-            <div class="pixel-box pixel-box-stone w-full max-w-2xl p-6 flex flex-col space-y-4 max-h-[90vh] overflow-y-auto text-xs md:text-sm">
-                <div class="flex justify-between items-center border-b border-gray-700 pb-2">
-                    <h3 class="text-lg font-bold text-yellow-400 flex items-center gap-2">
-                        <span>⚙️</span> GitHub Pages 龍虎榜 Firebase 排錯與設定
-                    </h3>
-                    <button onclick="game.closeFirebaseModal()" class="text-gray-400 hover:text-white font-bold text-xl">✕</button>
-                </div>
-
-                <div class="bg-gray-900 p-3 border border-gray-700 space-y-2">
-                    <p class="text-gray-300">目前連線狀態：<span id="modalFbStatus" class="font-bold text-yellow-400">檢查中...</span></p>
-                    <p id="modalFbErrorDetail" class="text-red-400 text-xs hidden bg-red-950/50 p-2 border border-red-800"></p>
-                </div>
-
-                <div class="space-y-3">
-                    <h4 class="font-bold text-yellow-300">🛠 GitHub Pages 無法上傳龍虎榜常見原因與解法：</h4>
-                    <ol class="list-decimal list-inside space-y-2 text-gray-300">
-                        <li>
-                            <b class="text-white">Firestore Rules (安全規則) 未開放：</b><br>
-                            請至 Firebase Console -> Firestore Database -> Rules，將規則修改為：
-                            <pre class="bg-black p-2 border border-gray-700 text-green-400 text-xs my-1">rules_version = '2';
-service cloud.firestore {
-  match /databases/{database}/documents {
-    match /{document=**} {
-      allow read, write: if true;
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>方塊語文大冒險：詞意推斷大師</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts - VT323 像素字型與微軟正黑體 -->
+  <link href="https://fonts.googleapis.com/css2?family=VT323&family=Noto+Sans+TC:wght@400;700;900&display=swap" rel="stylesheet">
+  
+  <style>
+    body {
+      font-family: 'Noto Sans TC', 'VT323', monospace, sans-serif;
+      background-color: #121826;
+      background-image: 
+        radial-gradient(#1e293b 2px, transparent 2px),
+        radial-gradient(#1e293b 2px, #0f172a 2px);
+      background-size: 40px 40px;
+      background-position: 0 0, 20px 20px;
+      image-rendering: pixelated;
     }
-  }
-}</pre>
-                        </li>
-                        <li>
-                            <b class="text-white">未啟用 Firestore Database：</b><br>
-                            請確認已在 Firebase 後台點擊「建立資料庫 (Create Database)」。
-                        </li>
-                        <li>
-                            <b class="text-white">離線與備份機制：</b><br>
-                            即使 Firebase 未成功連接，遊戲已自動切換為 <b class="text-cyan-300">LocalStorage 本地備份模式</b>，分數不會遺失且遊戲絕不卡死！
-                        </li>
-                    </ol>
-                </div>
 
-                <!-- Custom Firebase Config Input field for custom deployments -->
-                <div class="border-t border-gray-700 pt-3 space-y-2">
-                    <label class="block font-bold text-gray-300">填入你的 Firebase Config (選擇性)：</label>
-                    <textarea id="customConfigInput" rows="4" placeholder='{"apiKey": "AIzaSy...", "authDomain": "...", "projectId": "...", "storageBucket": "...", "messagingSenderId": "...", "appId": "..."}' 
-                        class="w-full p-2 bg-black border border-gray-700 text-xs font-mono text-green-300 focus:outline-none focus:border-yellow-400"></textarea>
-                    <div class="flex gap-2">
-                        <button onclick="game.saveCustomFirebaseConfig()" class="pixel-btn btn-green px-4 py-2 font-bold">
-                            儲存並重新測試連線
-                        </button>
-                        <button onclick="game.clearCustomFirebaseConfig()" class="pixel-btn btn-red px-4 py-2 font-bold">
-                            重置為預設
-                        </button>
-                    </div>
-                </div>
+    /* Minecraft 像素風格按鈕 */
+    .mc-button {
+      background-color: #525252;
+      border: 4px solid #000000;
+      border-top-color: #8e8e8e;
+      border-left-color: #8e8e8e;
+      border-bottom-color: #262626;
+      border-right-color: #262626;
+      box-shadow: inset -2px -2px 0px 0px #1a1a1a;
+      color: #ffffff;
+      text-shadow: 2px 2px 0px #000000;
+      transition: all 0.08s ease-in-out;
+      cursor: pointer;
+      user-select: none;
+    }
+    .mc-button:hover:not(:disabled) {
+      background-color: #6b6b6b;
+      transform: translateY(-2px);
+    }
+    .mc-button:active:not(:disabled) {
+      border-top-color: #262626;
+      border-left-color: #262626;
+      border-bottom-color: #8e8e8e;
+      border-right-color: #8e8e8e;
+      transform: translateY(1px);
+    }
+
+    /* 泥土/綠草主題按鈕 */
+    .mc-button-green {
+      background-color: #2e7d32;
+      border-top-color: #4caf50;
+      border-left-color: #4caf50;
+      border-bottom-color: #1b5e20;
+      border-right-color: #1b5e20;
+    }
+    .mc-button-green:hover:not(:disabled) {
+      background-color: #388e3c;
+    }
+
+    /* 金黃鑽石主題按鈕 */
+    .mc-button-gold {
+      background-color: #f57f17;
+      border-top-color: #fbc02d;
+      border-left-color: #fbc02d;
+      border-bottom-color: #e65100;
+      border-right-color: #e65100;
+    }
+    .mc-button-gold:hover:not(:disabled) {
+      background-color: #fbc02d;
+    }
+
+    /* 藍色水鑽按鈕 */
+    .mc-button-blue {
+      background-color: #0288d1;
+      border-top-color: #29b6f6;
+      border-left-color: #29b6f6;
+      border-bottom-color: #01579b;
+      border-right-color: #01579b;
+    }
+    .mc-button-blue:hover:not(:disabled) {
+      background-color: #039be5;
+    }
+
+    /*  Minecraft 懸浮面板框 */
+    .mc-panel {
+      background-color: #c6c6c6;
+      border: 6px solid #000000;
+      border-top-color: #ffffff;
+      border-left-color: #ffffff;
+      border-bottom-color: #555555;
+      border-right-color: #555555;
+      box-shadow: 0 20px 25px -5px rgba(0,0,0,0.7);
+    }
+
+    /* 遊戲背景深色泥土框 */
+    .mc-panel-dark {
+      background-color: #212121;
+      border: 6px solid #000000;
+      border-top-color: #424242;
+      border-left-color: #424242;
+      border-bottom-color: #101010;
+      border-right-color: #101010;
+    }
+
+    /* 文字發光效果 */
+    .pixel-text-shadow {
+      text-shadow: 3px 3px 0px #000;
+    }
+  </style>
+</head>
+<body class="min-h-screen text-slate-100 flex flex-col justify-between p-3 md:p-6">
+
+  <!-- 頂部標題與學校資訊列 -->
+  <header class="max-w-4xl mx-auto w-full text-center my-2 md:my-4">
+    <div class="inline-block bg-black/60 backdrop-blur px-4 py-2 rounded-lg border-2 border-amber-500/50 mb-2">
+      <span class="text-amber-400 font-bold text-xs md:text-sm tracking-widest">
+        🏫 香港道教聯合會圓玄學院第三小學 | 四年級閱讀策略
+      </span>
+    </div>
+    <h1 class="text-3xl md:text-5xl font-black text-yellow-400 tracking-wider pixel-text-shadow">
+      ⛏️ 方塊語文大冒險
+    </h1>
+    <p class="text-slate-300 text-sm md:text-base font-bold mt-1 tracking-wide">
+      ── 詞意推斷大師：透過上文下理推斷詞意 ──
+    </p>
+  </header>
+
+  <!-- 主要遊戲互動容器 -->
+  <main id="app" class="max-w-3xl mx-auto w-full flex-1 flex flex-col justify-center my-2">
+    <!-- 內容將由 JavaScript 動態渲染 -->
+  </main>
+
+  <!-- 頁尾 -->
+  <footer class="max-w-4xl mx-auto w-full text-center my-3 text-xs text-slate-400 font-bold">
+    © 2026 語文科小學閱讀策略互動遊戲 | Powered by Firebase & GitHub Pages
+  </footer>
+
+  <!-- Firebase SDK (v11 ESM) -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
+    import { 
+      getFirestore, 
+      collection, 
+      addDoc, 
+      getDocs, 
+      query, 
+      orderBy, 
+      limit, 
+      serverTimestamp 
+    } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+
+    // =========================================================================
+    // ⚙️ 使用使用者提供之專屬 Firebase Config 資訊
+    // =========================================================================
+    const firebaseConfig = {
+      apiKey: "AIzaSyDnpcnEOu7DovQmxU6fKXv_HMzXGrMuBGk",
+      authDomain: "guessingchinesewords.firebaseapp.com",
+      databaseURL: "https://guessingchinesewords-default-rtdb.firebaseio.com",
+      projectId: "guessingchinesewords",
+      storageBucket: "guessingchinesewords.firebasestorage.app",
+      messagingSenderId: "468365284316",
+      appId: "1:468365284316:web:ee58711a9243cd6b4ef519",
+      measurementId: "G-LGJ8V6C4BB"
+    };
+
+    let db = null;
+    let isCloudConnected = false;
+
+    try {
+      const app = initializeApp(firebaseConfig);
+      db = getFirestore(app);
+      isCloudConnected = true;
+      console.log("連線成功：Firebase 雲端資料庫已成功啟用！");
+    } catch (e) {
+      console.warn("Firebase 初始化時遇到狀況，將自動啟用本機暫存備份模式:", e);
+    }
+
+    // =========================================================================
+    // 📚 題庫資料 (高中低三層，各 8 題，共 24 題專用閱讀策略題目)
+    // =========================================================================
+    const QUESTION_BANK = {
+      easy: [
+        { id: 1, text: "小明今天非常過分，老師給他提出了嚴厲的警告，希望他能認錯。", word: "嚴厲", options: ["溫和慈祥", "嚴格厲害", "隨便輕浮", "高聲大叫"], answer: 1, clue: "上文『小明過分』和下文『希望他認錯』，可推斷老師的警告是非常認真且嚴格的。" },
+        { id: 2, text: "這座花園裡的花朵盛開，散發出陣陣淡雅的香氣，令人心曠神怡。", word: "淡雅", options: ["濃烈刺鼻", "清新雅緻", "惡臭難聞", "色彩繽紛"], answer: 1, clue: "下文『令人心曠神怡』說明香氣清淡舒爽，並非濃烈或難聞。" },
+        { id: 3, text: "經過長途跋涉，運動員們已經精疲力竭，躺在草地上不想動彈。", word: "精疲力竭", options: ["精神抖擻", "體力耗盡", "興高采烈", "滿懷希望"], answer: 1, clue: "下文『躺在草地上不想動彈』，推斷出體力已經完全消耗殆盡。" },
+        { id: 4, text: "弟弟小心翼翼地捧著玻璃杯，生怕一不小心把它摔碎了。", word: "小心翼翼", options: ["非常謹慎", "粗心大意", "快速奔跑", "隨隨便便"], answer: 0, clue: "下文『生怕一不小心把它摔碎』，顯現出極度謹慎謹慎的動作態度。" },
+        { id: 5, text: "大雨滂沱，街上的行人紛紛撐開傘，急忙尋找躲雨的地方。", word: "大雨滂沱", options: ["下著毛毛細雨", "雨下得非常大", "天空中沒有雲", "陽光十分強烈"], answer: 1, clue: "下文『行人紛紛撐傘急忙躲雨』，暗示當時雨勢相當巨大。" },
+        { id: 6, text: "這本小說的情節曲折離奇，引人入勝，讓我忍不住一頁頁看下去。", word: "引人入勝", options: ["讓人感到無聊", "吸引人進入佳境", "讓人心生恐懼", "文字非常難懂"], answer: 1, clue: "下文『忍不住一頁頁看下去』，代表故事內容非常有吸引力。" },
+        { id: 7, text: "面對突如其來的地震，小華沒有慌張，反而十分鎮定地指導大家避難。", word: "鎮定", options: ["驚慌失措", "沉著冷靜", "憤怒不平", "高興歡呼"], answer: 1, clue: "上文『沒有慌張』與『反而...』形成直接說明，意指沉著冷靜。" },
+        { id: 8, text: "做事情不能草率，必須認真檢查每一個細節，才能確保萬無一失。", word: "草率", options: ["馬虎不認真", "非常仔細", "動作迅速", "堅持到底"], answer: 0, clue: "下文對比『必須認真檢查細節』，反推『草率』意為做事馬虎隨便。" }
+      ],
+      medium: [
+        { id: 9, text: "面對對手的挑釁，他始終保持沉默，不予理會。", word: "不予理會", options: ["熱情回應", "不加理睬", "非常生氣", "主動道歉"], answer: 1, clue: "上文『保持沉默』說明他不打算對對手作任何回應或理睬。" },
+        { id: 10, text: "這場音樂會的票十分緊俏，開售不到五分鐘就被搶購一空。", word: "緊俏", options: ["貨源充足", "非常熱銷搶手", "價格便宜", "無人問津"], answer: 1, clue: "下文『五分鐘內被搶購一空』，顯示出門票極度熱銷受歡迎。" },
+        { id: 11, text: "討論會上大家各抒己見，提出了許多寶貴的意見。", word: "各抒己見", options: ["沉默不語", "各自發表自己的意見", "盲目認同他人", "互相爭吵"], answer: 1, clue: "下文『提出了許多寶貴意見』，說明大家各自說出了自己的看法。" },
+        { id: 12, text: "這幅畫作色彩絢麗，吸引了許多藝術愛好者駐足欣賞。", word: "駐足", options: ["停下腳步", "快速離開", "跑步前進", "大聲喊叫"], answer: 0, clue: "上下文『吸引愛好者欣賞』，推斷他們會停下腳步專心觀看。" },
+        { id: 13, text: "這個秘密他隱瞞了多年，直到今天才吐露真相。", word: "隱瞞", options: ["公開宣佈", "藏匿不讓人知道", "隨意編造", "忘記清楚"], answer: 1, clue: "下文『直到今天才吐露』，說明之前一直藏著不讓別人知道。" },
+        { id: 14, text: "他辦事向來雷厲風行，絕不拖泥帶水，因此效率極高。", word: "雷厲風行", options: ["拖延時間", "執行果斷迅速", "猶豫不決", "聲音非常大"], answer: 1, clue: "下文『不拖泥帶水、效率極高』，推斷其行動力和執行力極其迅速果斷。" },
+        { id: 15, text: "經歷了多次失敗，他依然沒有灰心，反而更加發奮圖強。", word: "發奮圖強", options: ["放棄努力", "振作努力爭取好成績", "怨天尤人", "感到悲傷"], answer: 1, clue: "上文『沒有灰心』與『反而更加...』，說明他振作精神更加努力。" },
+        { id: 16, text: "這座古老的建築經過歲月的洗禮，顯得有些滄桑。", word: "滄桑", options: ["新穎漂亮", "歷經歲月變遷的古舊感", "繁華熱鬧", "堅固無比"], answer: 1, clue: "上文『古老建築、經過歲月洗禮』，推斷帶有歷史變遷與古舊的感觸。" }
+      ],
+      hard: [
+        { id: 17, text: "在困難面前，我們應該迎難而上，而不是畏縮不前。", word: "畏縮不前", options: ["勇敢前進", "因為害怕而退縮不前", "積極思考", "大步邁進"], answer: 1, clue: "上文『而不是...』對比前面的『迎難而上』，反推其意為害怕而不敢前進。" },
+        { id: 18, text: "這篇名著含義深邃，需要耐心地反覆閱讀才能體會箇中妙趣。", word: "深邃", options: ["淺顯易懂", "深奧幽深", "文字冗長", "內容枯燥"], answer: 1, clue: "下文『需要耐心反覆閱讀才能體會』，說明文章內容深奧並不簡單。" },
+        { id: 19, text: "聽到這個好消息，大家都喜不自勝，紛紛擁抱慶祝。", word: "喜不自勝", options: ["悲傷難過", "高興得無法控制自己", "非常害怕", "感到十分驚訝"], answer: 1, clue: "下文『擁抱慶祝』與上文『好消息』，說明高興歡喜到了極點。" },
+        { id: 20, text: "他雖然家境貧寒，但從不自卑，反而憑藉努力考上了理想的大學。", word: "自卑", options: ["自信滿滿", "看輕自己、感到不如人", "驕傲自大", "勇敢堅強"], answer: 1, clue: "上文『家境貧寒』與下文『從不...反而憑藉努力』，推斷自卑為輕視看低自己。" },
+        { id: 21, text: "這項新發明具有劃時代的意義，徹底改變了人類的生活方式。", word: "劃時代", options: ["開創新時代的", "過時的", "普通平庸的", "短暫一時的"], answer: 0, clue: "下文『徹底改變了人類生活方式』，說明其影響力具有開創新時代的價值。" },
+        { id: 22, text: "老教授說話條理分明，絲絲入扣，讓人聽得心服口服。", word: "絲絲入扣", options: ["混亂無章", "講話緊湊嚴密、合情合理", "聲音低沉", "速度極慢"], answer: 1, clue: "上文『條理分明』與下文『心服口服』，說明表達極具邏輯且合情合理。" },
+        { id: 23, text: "對於這項不合理的決定，大家都感到義憤填膺，紛紛表達抗議。", word: "義憤填膺", options: ["心中充滿正義的憤怒", "高興歡喜", "冷漠無動於衷", "害怕恐懼"], answer: 0, clue: "上下文『不合理的決定』與『表達抗議』，推斷心中充滿因正義而生的憤怒。" },
+        { id: 24, text: "經過長期的努力，他的研究終於取得了突破性的進展，令人矚目。", word: "矚目", options: ["不被關心", "吸引眾人的目光注意", "令人失望", "隱密不公開"], answer: 1, clue: "上文『突破性進展』，推斷成果必然會吸引大家的目光與關注。" }
+      ]
+    };
+
+    // 8-bit Minecraft 復古 Web Audio 音效合成器
+    const playSound = (type) => {
+      try {
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+
+        if (type === 'click') {
+          osc.type = 'square';
+          osc.frequency.setValueAtTime(140, ctx.currentTime);
+          gain.gain.setValueAtTime(0.08, ctx.currentTime);
+          osc.start();
+          osc.stop(ctx.currentTime + 0.05);
+        } else if (type === 'correct') {
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(261.63, ctx.currentTime); // C4
+          osc.frequency.setValueAtTime(329.63, ctx.currentTime + 0.08); // E4
+          osc.frequency.setValueAtTime(392.00, ctx.currentTime + 0.16); // G4
+          osc.frequency.setValueAtTime(523.25, ctx.currentTime + 0.24); // C5
+          gain.gain.setValueAtTime(0.15, ctx.currentTime);
+          osc.start();
+          osc.stop(ctx.currentTime + 0.35);
+        } else if (type === 'wrong') {
+          osc.type = 'sawtooth';
+          osc.frequency.setValueAtTime(180, ctx.currentTime);
+          osc.frequency.setValueAtTime(110, ctx.currentTime + 0.12);
+          gain.gain.setValueAtTime(0.15, ctx.currentTime);
+          osc.start();
+          osc.stop(ctx.currentTime + 0.25);
+        }
+      } catch (e) {
+        // 忽略音效播放阻擋錯誤
+      }
+    };
+
+    // 遊戲狀態變數 (State)
+    let state = {
+      screen: 'welcome', // welcome, game, result, leaderboard
+      playerName: '',
+      difficulty: 'easy',
+      questions: [],
+      currentIndex: 0,
+      score: 0,
+      timer: 0,
+      timerInterval: null,
+      selectedOption: null,
+      showClue: false,
+      leaderboardData: []
+    };
+
+    // UI 畫面繪製主函數
+    function render() {
+      const app = document.getElementById('app');
+
+      if (state.screen === 'welcome') {
+        app.innerHTML = `
+          <div class="mc-panel p-5 md:p-8 text-slate-800 max-w-lg mx-auto w-full">
+            <div class="text-center mb-6">
+              <span class="text-4xl md:text-5xl">⛏️</span>
+              <h2 class="text-2xl md:text-3xl font-extrabold mt-2 text-amber-900 border-b-4 border-amber-900 pb-2">
+                進入語文冒險世界
+              </h2>
             </div>
-        </div>
+            
+            <div class="mb-5">
+              <label class="block text-slate-900 font-bold mb-2 text-sm md:text-base">
+                👤 輸入探險家名字 (學生姓名)：
+              </label>
+              <input type="text" id="playerNameInput" value="${state.playerName}" 
+                placeholder="例如：陳小明" 
+                class="w-full p-3 border-4 border-slate-800 bg-white text-black font-bold focus:outline-none focus:ring-2 focus:ring-amber-500 text-lg">
+            </div>
 
-    </main>
+            <div class="mb-6">
+              <label class="block text-slate-900 font-bold mb-2 text-sm md:text-base">
+                🪜 選擇挑戰階梯 (難度分層)：
+              </label>
+              <div class="grid grid-cols-3 gap-2">
+                <button onclick="setDifficulty('easy')" 
+                  class="mc-button p-3 text-sm md:text-base font-bold flex flex-col items-center ${state.difficulty==='easy'?'bg-green-700 border-green-300 ring-4 ring-green-400':''}">
+                  <span class="text-lg">🟫</span>
+                  <span>泥土 (初級)</span>
+                </button>
+                <button onclick="setDifficulty('medium')" 
+                  class="mc-button p-3 text-sm md:text-base font-bold flex flex-col items-center ${state.difficulty==='medium'?'bg-slate-600 border-cyan-300 ring-4 ring-cyan-400':''}">
+                  <span class="text-lg">⚙️</span>
+                  <span>鐵礦 (中級)</span>
+                </button>
+                <button onclick="setDifficulty('hard')" 
+                  class="mc-button p-3 text-sm md:text-base font-bold flex flex-col items-center ${state.difficulty==='hard'?'bg-blue-700 border-blue-300 ring-4 ring-blue-400':''}">
+                  <span class="text-lg">💎</span>
+                  <span>鑽石 (高級)</span>
+                </button>
+              </div>
+            </div>
 
-    <script type="module">
-        // --- FIREBASE IMPORT & INTEGRATION (V11 ESM CDN) ---
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, getDocs, addDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+            <div class="space-y-3">
+              <button onclick="startGame()" class="mc-button mc-button-green w-full py-4 text-xl font-black tracking-wide">
+                🚀 開始冒險挑戰 (共8題)
+              </button>
+              <button onclick="showLeaderboard()" class="mc-button mc-button-gold w-full py-3 text-lg font-bold">
+                🏆 查看全網跨裝置龍虎榜
+              </button>
+            </div>
+          </div>
+        `;
+      } else if (state.screen === 'game') {
+        const q = state.questions[state.currentIndex];
+        app.innerHTML = `
+          <div class="mc-panel p-4 md:p-6 text-slate-900">
+            <!-- 頂部資訊列 -->
+            <div class="flex flex-wrap justify-between items-center mb-4 border-b-4 border-slate-400 pb-2 gap-2 text-sm md:text-base font-bold">
+              <span class="bg-slate-800 text-white px-2.5 py-1 rounded">👤 ${state.playerName}</span>
+              <span class="text-amber-900">進度: ${state.currentIndex + 1} / 8</span>
+              <span class="text-green-800">得分: ${state.score}</span>
+              <span class="text-blue-800">⏱️ ${state.timer} 秒</span>
+            </div>
 
-        // Default or Environment Firebase Config Placeholder
-        const defaultFirebaseConfig = {
-            apiKey: "AIzaSyDemoPlaceholderKeyForGitHubPages",
-            authDomain: "minecraft-chinese-game.firebaseapp.com",
-            projectId: "minecraft-chinese-game",
-            storageBucket: "minecraft-chinese-game.appspot.com",
-            messagingSenderId: "123456789012",
-            appId: "1:123456789012:web:abcdef123456789"
-        };
+            <!-- 題目內文卡片 -->
+            <div class="bg-amber-50 border-4 border-amber-800 p-4 rounded mb-5 text-lg md:text-xl leading-relaxed shadow-inner">
+              ${q.text.replace(q.word, `<span class="bg-yellow-300 text-red-700 px-1.5 py-0.5 rounded font-black border-2 border-red-500 underline decoration-wavy">${q.word}</span>`)}
+            </div>
 
-        // GLOBAL APP DATA & QUESTIONS DATASET (4th Grade Context Clues)
-        const QUESTIONS = {
-            dirt: [ // 初級：泥土階 (8題)
-                {
-                    word: "興高采烈",
-                    sentence: "聽到週末可以去野餐，弟弟立刻跳了起來，雙眼發亮、興高采烈地跑去準備零食。",
-                    options: ["形容極度興奮開心的樣子", "形容生氣發火的樣子", "形容非常害怕發抖", "形容非常疲倦想睡"],
-                    answer: 0,
-                    clueBefore: "聽到可以去野餐，弟弟「跳了起來，雙眼發亮」",
-                    clueAfter: "積極地「跑去準備零食」",
-                    strategy: "前文的『跳起來、雙眼發亮』與後文的『準備零食』都是高興採取的行動，故推斷為『興奮開心』。"
-                },
-                {
-                    word: "忐忑不安",
-                    sentence: "小明第一次要登台公開演講，他雙手緊握、心跳得極快，心裡忐忑不安，深怕自己背錯台詞。",
-                    options: ["心裡十分安定平靜", "心裡起伏不定、十分緊張恐懼", "覺得事情非常有趣", "覺得身體非常高大"],
-                    answer: 1,
-                    clueBefore: "第一次登台演講，「雙手緊握、心跳得極快」",
-                    clueAfter: "「深怕自己背錯台詞」表達了擔心受挫的心情",
-                    strategy: "雙手緊握、心跳加速與擔心背錯，都指示出一種極度緊張焦慮的心態。"
-                },
-                {
-                    word: "目不轉睛",
-                    sentence: "魔術師在台上表演精彩的變鴿子秀，台下的觀眾都目不轉睛地看著，連眼睛都不捨得眨一下。",
-                    options: ["眼睛轉來轉去停不下來", "看都不看一眼", "眼珠一動不動、聚精會神地看", "閉上眼睛專心聽聲音"],
-                    answer: 2,
-                    clueBefore: "魔術秀「精彩」吸引注意力",
-                    clueAfter: "「連眼睛都不捨得眨一下」直白補充說明",
-                    strategy: "『連眼睛都不眨』就是『目不轉睛』最直接的下文註解。"
-                },
-                {
-                    word: "恍然大悟",
-                    sentence: "這道數學題我思考了很久都解不出來，經過老師簡單點撥後，我才恍然大悟，原來方法這麼簡單！",
-                    options: ["一下子完全明白過來", "感到更加困惑迷惘", "氣得想放棄不寫", "突然忘記了所有公式"],
-                    answer: 0,
-                    clueBefore: "原本『思考很久都解不出來』且經過『老師點撥』",
-                    clueAfter: "感嘆『原來方法這麼簡單！』說明終於通曉了",
-                    strategy: "從『解不出來』轉變為感嘆『原來這麼簡單』，表示原本卡住的思維瞬間通達明白。"
-                },
-                {
-                    word: "手忙腳亂",
-                    sentence: "公車快要開走了，小華一邊背書包一邊找悠遊卡，手忙腳亂地把桌上的水壺都撞翻了。",
-                    options: ["做事非常有條理", "手腳靈活地跳舞", "做事慌張混亂、不知所措", "悠閒地走在路上"],
-                    answer: 2,
-                    clueBefore: "「公車快開走了」營造時間極度緊迫情境",
-                    clueAfter: "「把桌上的水壺都撞翻了」展現出動作失誤混亂",
-                    strategy: "趕時間的急迫加上撞翻水壺的混亂結果，暗示其做事節奏失去控制。"
-                },
-                {
-                    word: "垂頭喪氣",
-                    sentence: "接力賽跑因為掉棒而輸掉了比賽，隊員們垂頭喪氣地走回休息區，一句話也不想說。",
-                    options: ["因為贏球而手舞足蹈", "低著頭、失意無精打采的樣子", "昂首挺胸非常有自信", "氣得當場破口大罵"],
-                    answer: 1,
-                    clueBefore: "「因為掉棒而輸掉了比賽」說明面臨失敗打擊",
-                    clueAfter: "「走回休息區，一句話也不想說」呈現低落情緒",
-                    strategy: "失敗的情境加上不願說話的沉悶表現，推算該詞形容失意沮喪。"
-                },
-                {
-                    word: "專心致志",
-                    sentence: "姐姐坐在書桌前專心致志地讀書，連媽媽進房間敲門送水果，她都沒有察覺到。",
-                    options: ["心思全部集中在一件事情上", "邊讀書邊看電視玩手機", "心情非常煩躁不安", "看書看了兩秒就走神"],
-                    answer: 0,
-                    clueBefore: "「坐在書桌前讀書」的背景情境",
-                    clueAfter: "「連媽媽進來送水果都沒有察覺」代表注意力高度封閉集中",
-                    strategy: "外界干擾（敲門送水果）無法打斷其注意力，證明其高度專注。"
-                },
-                {
-                    word: "水落石出",
-                    sentence: "經過警察叔叔調閱監視器並仔細調查真相後，這起物品遺失案終於水落石出，找到了偷拿東西的人。",
-                    options: ["水面上升把石頭淹沒", "事情的真相完全大白", "石頭掉進深水裡不見了", "大家都不想處理這件事"],
-                    answer: 1,
-                    clueBefore: "警方「調閱監視器並仔細調查真相」",
-                    clueAfter: "「找到了偷拿東西的人」獲得明確結果",
-                    strategy: "經過調查調查並最終抓到犯人，表示事情原貌與真相揭曉。"
-                }
-            ],
-            iron: [ // 中級：鐵礦階 (8題)
-                {
-                    word: "浩瀚",
-                    sentence: "夜幕降臨，抬頭仰望浩瀚的宇宙，無數閃爍的星星宛如撒在黑色絲絨上的鑽石，令人感到人類的渺小。",
-                    options: ["廣大無邊、漫無邊際", "非常微小狹窄", "氣味非常難聞", "顏色極度單調"],
-                    answer: 0,
-                    clueBefore: "抬頭仰望「宇宙」",
-                    clueAfter: "含有「無數閃爍的星星」、「令人感到人類的渺小」",
-                    strategy: "宇宙的尺度與人類的渺小進行對比，說明該詞意指空間廣大無限。"
-                },
-                {
-                    word: "屏息靜氣",
-                    sentence: "倒數計時最後五秒，全場觀眾屏息靜氣，連呼吸聲都聽不到，緊張地注視著那顆關鍵的投籃。",
-                    options: ["大聲吶喊助威", "忍住呼吸、不敢出聲，形容極度集中緊張", "邊吃東西邊聊天", "大聲咳嗽發洩緊張"],
-                    answer: 1,
-                    clueBefore: "比賽最後「倒數計時五秒」的極度緊張時刻",
-                    clueAfter: "「連呼吸聲都聽不到」的環境靜謐描寫",
-                    strategy: "『聽不到呼吸聲』直接呼應了『屏息 (忍住呼吸) 靜氣』的字面與情境意思。"
-                },
-                {
-                    word: "絡繹不絕",
-                    sentence: "這家老字號糕餅店的名氣很大，每逢中秋節前夕，前來購買月餅的顧客絡繹不絕，門口排起了長龍。",
-                    options: ["一個人也沒有，非常冷清", "人或車輛往來接連不斷", "大家都買不到東西生氣離開", "生意失敗決定關門"],
-                    answer: 1,
-                    clueBefore: "名氣很大，中秋節前的熱銷期",
-                    clueAfter: "「門口排起了長龍」顯示人潮持續不散",
-                    strategy: "長龍般的排隊人潮暗示人流不斷湧入，故為接連不斷之意。"
-                },
-                {
-                    word: "輕描淡寫",
-                    sentence: "雖然他在這次地震救援中立下了大功，但當記者採訪他時，他只是輕描淡寫地說自己只是盡了本份。",
-                    options: ["繪畫時用輕微的顏色描繪", "隨意、輕鬆簡單地帶過，不加誇張說明", "用大聲呵斥的方式說話", "把事情寫得非常詳細長篇大論"],
-                    answer: 1,
-                    clueBefore: "轉折語「雖然立下大功」",
-                    clueAfter: "「只是說自己盡了本份」顯示謙虛不誇大",
-                    strategy: "對比立大功的事實與其低調的回答，推算該詞表示簡略輕鬆地談論重大事件。"
-                },
-                {
-                    word: "微不足道",
-                    sentence: "與浩瀚無垠的銀河系相比，地球在宇宙中只是一顆微不足道的微塵罷了。",
-                    options: ["非常微小，不值得一提", "非常巨大宏偉", "極其重要不可或缺", "聲音非常響亮"],
-                    answer: 0,
-                    clueBefore: "與「浩瀚無垠的銀河系相比」的巨大對照",
-                    clueAfter: "比喻為「一顆微塵罷了」",
-                    strategy: "『微塵』本身就是微小的象徵，顯見此詞形容極度微小忽略。"
-                },
-                {
-                    word: "莫名其妙",
-                    sentence: "他剛才還笑嘻嘻地跟我們說話，現在卻突然摔門離開，大家都不知所措，感到莫名其妙。",
-                    options: ["覺得事情非常精彩巧妙", "無法說明其中的奧妙或原因，令人摸不著頭腦", "知道事情的每一個細節", "非常崇拜對方"],
-                    answer: 1,
-                    clueBefore: "態度前後劇烈轉變「剛才笑嘻嘻，突然摔門離去」",
-                    clueAfter: "「大家都不知所措」說明無法理解理由",
-                    strategy: "大家對突發行為感到『不知所措』，反映出原因難以理解。"
-                },
-                {
-                    word: "異口同聲",
-                    sentence: "老師問大家願不願意去戶外教學，全班同學異口同聲地高喊：「願意！」聲音響徹教室。",
-                    options: ["大家發出的聲音各不相同", "不同的人說出完全相同的話", "大家都閉著嘴巴不回答", "只有一個人代表回答"],
-                    answer: 1,
-                    clueBefore: "「全班同學」眾人共同情境",
-                    clueAfter: "齊聲高喊相同的字詞「『願意！』」",
-                    strategy: "眾人 simultaneously 喊出同一個詞，推斷為大家說話一致。"
-                },
-                {
-                    word: "迫不及待",
-                    sentence: "收到期盼已久的生日禮物盒，弟弟迫不及待地撕開包裝紙，急著想看看裡面裝了什麼。",
-                    options: ["不情不願地放著不理會", "心情非常平靜地慢慢等待", "急迫得不能再等待", "害怕打開看到討厭的東西"],
-                    answer: 2,
-                    clueBefore: "拿到「期盼已久」的禮物",
-                    clueAfter: "「撕開包裝紙，急著想看看」的著急動作",
-                    strategy: "期盼已久的心情加上『急著想看』的動作，展現出無法忍受等待的急切。"
-                }
-            ],
-            diamond: [ // 高級：鑽石階 (8題)
-                {
-                    word: "推心置腹",
-                    sentence: "他們倆從小一起長大，彼此信任，遇到任何煩惱都會推心置腹地談心，從不隱瞞對方。",
-                    options: ["把心和肚子拿出來給對方看", "真誠待人，把自己的赤誠之心交給對方", "暗中互相猜忌傷害", "敷衍應付對方"],
-                    answer: 1,
-                    clueBefore: "「從小一起長大，彼此信任」奠定基礎",
-                    clueAfter: "「從不隱瞞對方」揭示談話的坦誠程度",
-                    strategy: "『從不隱瞞』與『彼此信任』交織出真誠、毫無保留交流的含意。"
-                },
-                {
-                    word: "孤陋寡聞",
-                    sentence: "如果不常閱讀書籍或接觸新事物，很容易變得孤陋寡聞，像井底之蛙一樣缺乏見識。",
-                    options: ["學識淺薄，見聞狹窄", "喜歡一個人獨處聽音樂", "耳朵聽力非常敏銳", "交了很多有錢的朋友"],
-                    answer: 0,
-                    clueBefore: "「不常閱讀書籍或接觸新事物」的原因",
-                    clueAfter: "比喻為「像井底之蛙一樣缺乏見識」",
-                    strategy: "『井底之蛙』與『缺乏見識』是『孤陋寡聞』最精準的喻體與直接說明。"
-                },
-                {
-                    word: "懸崖勒馬",
-                    sentence: "得知自己差點落入網路詐騙的陷阱後，他懸崖勒馬，及時停止匯款，才沒有造成重大金錢損失。",
-                    options: ["在懸崖邊騎馬跳躍", "到了危險邊緣及時醒悟停止行動", "把馬匹牽到山頂放牧", "明知危險還繼續冒險"],
-                    answer: 1,
-                    clueBefore: "「差點落入網路詐騙陷阱」的危險情境",
-                    clueAfter: "「及時停止匯款，才沒有造成損失」的及時煞車動作",
-                    strategy: "在詐騙臨門一腳之際『及時停止』，精確對應臨危止步的意象。"
-                },
-                {
-                    word: "臨渴掘井",
-                    sentence: "平時不努力複習功課，直到考試前一天晚上才臨渴掘井地熬夜抱佛腳，往往收效甚微。",
-                    options: ["到了口渴時才挖井，比喻事到臨頭才做準備", "平時就挖好井水備用", "臨近河邊去取水喝", "做事非常有前瞻性與計劃"],
-                    answer: 0,
-                    clueBefore: "「平時不努力複習功課」",
-                    clueAfter: "「考試前一天晚上才熬夜抱佛腳」",
-                    strategy: "『平時不準備』與『臨考前抱佛腳』相互呼應，點出事到臨頭才匆忙準備的弊端。"
-                },
-                {
-                    word: "巧奪天工",
-                    sentence: "這座用冰塊雕刻成的城堡藝術品精美絕倫，細節栩栩如生，簡直是巧奪天工，令人讚嘆不已。",
-                    options: ["強行搶走天上的工藝", "人工的精巧勝過天然，形容技藝極其精妙", "製作過程非常粗糙隨便", "破壞了天然的美景"],
-                    answer: 1,
-                    clueBefore: "冰雕城堡「精美絕倫，細節栩栩如生」",
-                    clueAfter: "讓人「讚嘆不已」",
-                    strategy: "細節極度生動且令人嘆為觀止，說明人工雕刻技巧超越自然的精妙。"
-                },
-                {
-                    word: "無微不至",
-                    sentence: "生病住院期間，護理師阿姨對我關懷備至，無論是量體溫還是換藥都無微不至，讓我感受到了溫暖。",
-                    options: ["沒有一點微小的優點", "每一個細微之處都照顧照顧得非常周到", "對病人置之不理", "做事敷衍了事粗心大意"],
-                    answer: 1,
-                    clueBefore: "護理師對我「關懷備至」",
-                    clueAfter: "「無論量體溫還是換藥都……感受到了溫暖」說明細節照料",
-                    strategy: "關懷備至與細緻的事務關照（量體溫換藥），皆說明照顧深入到每一個微小環節。"
-                },
-                {
-                    word: "融會貫通",
-                    sentence: "學習語文不能光靠死記硬背，只有將各課的知識融會貫通，才能在寫作和閱讀時靈活運用。",
-                    options: ["把各種知識融合貫通，得到全面透徹的理解", "把水融化後灌進管道裡", "把學到的東西全部忘光", "只死背其中一章節"],
-                    answer: 0,
-                    clueBefore: "反面提示「不能光靠死記硬背」",
-                    clueAfter: "正面提示「才能在寫作和閱讀時靈活運用」",
-                    strategy: "對比死記硬背，融會貫通能達到『靈活運用』的境界，指知識徹底串聯理解。"
-                },
-                {
-                    word: "滄海一粟",
-                    sentence: "站在宏偉的高山頂端俯瞰全景，個人所面臨的小煩惱顯得不過是滄海一粟，實在不必過於執著。",
-                    options: ["大海裡的一粒穀子，形容非常渺小", "海洋裡最巨大珍貴的珍珠", "非常有錢的富豪", "在海邊採集糧食"],
-                    answer: 0,
-                    clueBefore: "「站在宏偉的高山頂端」帶來廣大視野",
-                    clueAfter: "「個人小煩惱顯得……實在不必過於執著」",
-                    strategy: "在大自然宏偉視野對比下，個人煩惱變得無足輕重，暗示極為微小。"
-                }
-            ]
-        };
+            <p class="font-black text-slate-800 text-base md:text-lg mb-3">
+              請根據上文下理，推斷劃線詞語「<span class="text-red-700 font-black">${q.word}</span>」最正確的意思：
+            </p>
 
-        // --- SOUND SYNTHESIZER ENGINE (Web Audio API) ---
-        class SoundEngine {
-            constructor() {
-                this.ctx = null;
-                this.muted = false;
-            }
+            <!-- 4 個選項按鈕 -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-5">
+              ${q.options.map((opt, idx) => `
+                <button onclick="selectOption(${idx})" 
+                  ${state.showClue ? 'disabled' : ''}
+                  class="mc-button p-3.5 text-left font-bold text-base md:text-lg flex items-center space-x-3 ${state.selectedOption===idx ? (idx===q.answer?'mc-button-green':'bg-red-700 border-red-300'):''}">
+                  <span class="bg-black text-white px-2 py-0.5 text-xs font-mono rounded"> ${String.fromCharCode(65+idx)} </span>
+                  <span>${opt}</span>
+                </button>
+              `).join('')}
+            </div>
 
-            init() {
-                if (!this.ctx) {
-                    this.ctx = new (window.AudioContext || window.webkitAudioContext)();
-                }
-            }
+            <!-- 線索解析與下一題按鈕 -->
+            ${state.showClue ? `
+              <div class="bg-blue-50 border-4 border-blue-600 p-4 text-blue-950 mb-4 rounded shadow-md">
+                <p class="font-black text-blue-900 border-b-2 border-blue-300 pb-1 mb-2 text-base md:text-lg flex items-center">
+                  <span>💡 上文下理線索解析：</span>
+                </p>
+                <p class="text-sm md:text-base leading-relaxed">${q.clue}</p>
+              </div>
+              <button onclick="nextQuestion()" class="mc-button mc-button-green w-full py-3.5 font-black text-xl">
+                下一題 ➔
+              </button>
+            ` : ''}
+          </div>
+        `;
+      } else if (state.screen === 'result') {
+        app.innerHTML = `
+          <div class="mc-panel p-6 text-center text-slate-900 max-w-lg mx-auto w-full">
+            <h2 class="text-3xl md:text-4xl font-black mb-3 text-amber-900">🎉 冒險順利完成！</h2>
+            <p class="text-slate-700 font-bold mb-5">恭喜你完成閱讀策略「詞意推斷」考驗！</p>
 
-            toggleMute() {
-                this.muted = !this.muted;
-                const btn = document.getElementById('muteBtn');
-                if (btn) btn.innerText = this.muted ? "🔇" : "🔊";
-            }
+            <div class="bg-amber-50 border-4 border-amber-800 p-4 mb-6 rounded text-left space-y-2 text-base md:text-lg font-bold">
+              <p>👤 探險家姓名：<strong class="text-slate-900">${state.playerName}</strong></p>
+              <p>階梯難度：<span class="px-2 py-0.5 bg-slate-200 text-slate-800 rounded border border-slate-400">${state.difficulty==='easy'?'泥土 (初級)':state.difficulty==='medium'?'鐵礦 (中級)':'鑽石 (高級)'}</span></p>
+              <p>⭐ 最終得分：<strong class="text-green-700 text-2xl">${state.score}</strong> / 800 分</p>
+              <p>⏱️ 總共耗時：<strong class="text-blue-800">${state.timer} 秒</strong></p>
+            </div>
 
-            playClick() {
-                if (this.muted) return;
-                this.init();
-                const osc = this.ctx.createOscillator();
-                const gain = this.ctx.createGain();
-                osc.type = 'triangle';
-                osc.frequency.setValueAtTime(400, this.ctx.currentTime);
-                osc.frequency.exponentialRampToValueAtTime(100, this.ctx.currentTime + 0.05);
-                gain.gain.setValueAtTime(0.3, this.ctx.currentTime);
-                gain.gain.linearRampToValueAtTime(0.01, this.ctx.currentTime + 0.05);
-                osc.connect(gain);
-                gain.connect(this.ctx.destination);
-                osc.start();
-                osc.stop(this.ctx.currentTime + 0.05);
-            }
+            <div class="space-y-3">
+              <button onclick="showLeaderboard()" class="mc-button mc-button-gold w-full py-3.5 font-black text-lg">
+                🏆 上傳成績並查看全網龍虎榜
+              </button>
+              <button onclick="state.screen='welcome'; render();" class="mc-button w-full py-3 font-bold text-lg">
+                🔄 返回主選單
+              </button>
+            </div>
+          </div>
+        `;
+      } else if (state.screen === 'leaderboard') {
+        app.innerHTML = `
+          <div class="mc-panel p-5 md:p-6 text-slate-900 max-w-xl mx-auto w-full">
+            <h2 class="text-2xl md:text-3xl font-black text-center mb-2 text-amber-900">
+              🏆 全網跨裝置龍虎榜 (TOP 5)
+            </h2>
+            <p class="text-xs md:text-sm text-center mb-4 font-bold ${isCloudConnected ? 'text-green-700' : 'text-amber-700'}">
+              ${isCloudConnected ? '🌐 已連線至 Firebase 雲端資料庫 (全網同步中)' : '📁 目前為本機紀錄模式'}
+            </p>
 
-            playCorrect() {
-                if (this.muted) return;
-                this.init();
-                const now = this.ctx.currentTime;
-                [523.25, 659.25, 783.99, 1046.50].forEach((freq, idx) => { // C5, E5, G5, C6
-                    const osc = this.ctx.createOscillator();
-                    const gain = this.ctx.createGain();
-                    osc.type = 'sine';
-                    osc.frequency.setValueAtTime(freq, now + idx * 0.08);
-                    gain.gain.setValueAtTime(0.2, now + idx * 0.08);
-                    gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.08 + 0.25);
-                    osc.connect(gain);
-                    gain.connect(this.ctx.destination);
-                    osc.start(now + idx * 0.08);
-                    osc.stop(now + idx * 0.08 + 0.25);
-                });
-            }
+            <div class="space-y-2 mb-6">
+              ${state.leaderboardData.length === 0 ? '<p class="text-center text-slate-600 py-6 font-bold">資料加載中 / 暫無數據...</p>' : ''}
+              ${state.leaderboardData.map((item, idx) => `
+                <div class="flex justify-between items-center bg-amber-50 border-3 border-amber-900 p-3 font-bold text-sm md:text-base rounded shadow-sm">
+                  <div class="flex items-center space-x-2">
+                    <span class="text-xl w-7 text-center font-black">${idx === 0 ? '🥇' : idx === 1 ? '🥈' : idx === 2 ? '🥉' : `#${idx+1}`}</span>
+                    <span class="text-slate-900 font-extrabold">${item.name || '無名氏'}</span>
+                    <span class="text-xs px-2 py-0.5 bg-slate-200 text-slate-800 border border-slate-400 rounded">${item.difficulty === 'easy' ? '泥土' : item.difficulty === 'medium' ? '鐵礦' : '鑽石'}</span>
+                  </div>
+                  <div class="text-right">
+                    <span class="text-green-700 text-base md:text-lg font-black">${item.score}分</span>
+                    <span class="text-xs text-slate-500 ml-1">(${item.time}s)</span>
+                  </div>
+                </div>
+              `).join('')}
+            </div>
 
-            playWrong() {
-                if (this.muted) return;
-                this.init();
-                const now = this.ctx.currentTime;
-                const osc = this.ctx.createOscillator();
-                const gain = this.ctx.createGain();
-                osc.type = 'sawtooth';
-                osc.frequency.setValueAtTime(160, now);
-                osc.frequency.linearRampToValueAtTime(90, now + 0.25);
-                gain.gain.setValueAtTime(0.3, now);
-                gain.gain.linearRampToValueAtTime(0.01, now + 0.25);
-                osc.connect(gain);
-                gain.connect(this.ctx.destination);
-                osc.start(now);
-                osc.stop(now + 0.25);
-            }
+            <button onclick="state.screen='welcome'; render();" class="mc-button mc-button-blue w-full py-3.5 font-black text-lg">
+              🏠 返回主頁
+            </button>
+          </div>
+        `;
+      }
+    }
 
-            playWin() {
-                if (this.muted) return;
-                this.init();
-                const notes = [440, 554.37, 659.25, 880];
-                notes.forEach((freq, i) => {
-                    setTimeout(() => {
-                        if (this.muted) return;
-                        const osc = this.ctx.createOscillator();
-                        const gain = this.ctx.createGain();
-                        osc.type = 'square';
-                        osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
-                        gain.gain.setValueAtTime(0.15, this.ctx.currentTime);
-                        gain.gain.linearRampToValueAtTime(0.01, this.ctx.currentTime + 0.3);
-                        osc.connect(gain);
-                        gain.connect(this.ctx.destination);
-                        osc.start();
-                        osc.stop(this.ctx.currentTime + 0.3);
-                    }, i * 150);
-                });
-            }
+    // 綁定全域互動函數
+    window.setDifficulty = (diff) => {
+      playSound('click');
+      state.difficulty = diff;
+      render();
+    };
+
+    window.startGame = () => {
+      const nameInput = document.getElementById('playerNameInput')?.value.trim();
+      if (!nameInput) {
+        alert('請先輸入探險家名字 (學生姓名)！');
+        return;
+      }
+      playSound('click');
+      state.playerName = nameInput;
+      state.questions = [...QUESTION_BANK[state.difficulty]].sort(() => Math.random() - 0.5);
+      state.currentIndex = 0;
+      state.score = 0;
+      state.timer = 0;
+      state.selectedOption = null;
+      state.showClue = false;
+      state.screen = 'game';
+
+      if (state.timerInterval) clearInterval(state.timerInterval);
+      state.timerInterval = setInterval(() => {
+        state.timer++;
+        const timerEl = document.querySelector('#app .text-blue-800');
+        if (timerEl) timerEl.innerText = `⏱️ ${state.timer} 秒`;
+      }, 1000);
+
+      render();
+    };
+
+    window.selectOption = (idx) => {
+      if (state.showClue) return;
+      state.selectedOption = idx;
+      const q = state.questions[state.currentIndex];
+      state.showClue = true;
+
+      if (idx === q.answer) {
+        playSound('correct');
+        state.score += 100;
+      } else {
+        playSound('wrong');
+      }
+      render();
+    };
+
+    window.nextQuestion = () => {
+      playSound('click');
+      if (state.currentIndex < 7) {
+        state.currentIndex++;
+        state.selectedOption = null;
+        state.showClue = false;
+        render();
+      } else {
+        clearInterval(state.timerInterval);
+        state.screen = 'result';
+        saveScore();
+        render();
+      }
+    };
+
+    // 寫入成績 (雲端 Firestore + 本機 localStorage 雙重備份)
+    async function saveScore() {
+      const record = {
+        name: state.playerName,
+        score: state.score,
+        time: state.timer,
+        difficulty: state.difficulty,
+        timestamp: new Date().getTime()
+      };
+
+      // 1. 本機快取備份
+      let localScores = JSON.parse(localStorage.getItem('mc_chinese_scores') || '[]');
+      localScores.push(record);
+      localScores.sort((a,b) => b.score - a.score || a.time - b.time);
+      localStorage.setItem('mc_chinese_scores', JSON.stringify(localScores.slice(0, 10)));
+
+      // 2. 寫入 Firebase 雲端資料庫
+      if (isCloudConnected && db) {
+        try {
+          await addDoc(collection(db, "leaderboard"), {
+            name: record.name,
+            score: record.score,
+            time: record.time,
+            difficulty: record.difficulty,
+            createdAt: serverTimestamp()
+          });
+          console.log("成績已順利上傳至全網 Firebase 雲端資料庫！");
+        } catch (e) {
+          console.error("雲端寫入遇到阻礙，已自動儲存至本機:", e);
         }
+      }
+    }
 
-        const soundFX = new SoundEngine();
-        window.soundFX = soundFX;
+    // 撈取全網 TOP 5 高分榜
+    window.showLeaderboard = async () => {
+      playSound('click');
+      state.screen = 'leaderboard';
+      state.leaderboardData = [];
+      render();
 
-        // --- LEADERBOARD & FIREBASE MANAGER ---
-        class LeaderboardManager {
-            constructor() {
-                this.db = null;
-                this.auth = null;
-                this.app = null;
-                this.isFirebaseReady = false;
-                this.lastError = null;
-                this.appId = typeof __app_id !== 'undefined' ? __app_id : 'minecraft-chinese-v1';
-                this.LOCAL_STORAGE_KEY = 'mc_reading_leaderboard_backup';
-            }
-
-            async init() {
-                this.updateUIStatus('checking', '資料庫連線檢查中...');
-                
-                // Try reading user config from localStorage or default
-                let config = defaultFirebaseConfig;
-                const savedConfig = localStorage.getItem('mc_custom_firebase_config');
-                if (savedConfig) {
-                    try { config = JSON.parse(savedConfig); } catch(e){}
-                } else if (typeof __firebase_config !== 'undefined') {
-                    try { config = JSON.parse(__firebase_config); } catch(e){}
-                }
-
-                try {
-                    this.app = initializeApp(config);
-                    this.db = getFirestore(this.app);
-                    this.auth = getAuth(this.app);
-
-                    // Authentication Step (Rule 3)
-                    if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                        await signInWithCustomToken(this.auth, __initial_auth_token);
-                    } else {
-                        await signInAnonymously(this.auth);
-                    }
-
-                    // Test Firestore connection with a quick dry fetch
-                    const colRef = collection(this.db, 'artifacts', this.appId, 'public', 'data', 'leaderboard');
-                    await getDocs(colRef);
-
-                    this.isFirebaseReady = true;
-                    this.updateUIStatus('online', '🔥 雲端龍虎榜已連線');
-                } catch (err) {
-                    console.warn("Firebase Init/Permission Warning: Switching to LocalStorage Mode.", err);
-                    this.isFirebaseReady = false;
-                    this.lastError = err.message || err.toString();
-                    this.updateUIStatus('offline', '💾 本地龍虎榜 (備份模式)');
-                }
-            }
-
-            updateUIStatus(type, msg) {
-                const badge = document.getElementById('statusBadge');
-                const dot = document.getElementById('statusDot');
-                const txt = document.getElementById('statusText');
-                const lbNotice = document.getElementById('lbModeNotice');
-                const modalStatus = document.getElementById('modalFbStatus');
-                const modalErr = document.getElementById('modalFbErrorDetail');
-
-                if (txt) txt.innerText = msg;
-                if (lbNotice) lbNotice.innerText = `目前運作模式：${msg}`;
-                if (modalStatus) modalStatus.innerText = msg;
-
-                if (type === 'online') {
-                    if (dot) dot.className = 'w-2.5 h-2.5 rounded-full bg-green-500 inline-block';
-                    if (badge) badge.className = 'px-3 py-1 text-xs pixel-box bg-green-950 text-green-300 flex items-center gap-2 cursor-pointer';
-                    if (modalErr) modalErr.classList.add('hidden');
-                } else if (type === 'offline') {
-                    if (dot) dot.className = 'w-2.5 h-2.5 rounded-full bg-yellow-500 inline-block';
-                    if (badge) badge.className = 'px-3 py-1 text-xs pixel-box bg-amber-950 text-yellow-300 flex items-center gap-2 cursor-pointer';
-                    if (modalErr && this.lastError) {
-                        modalErr.innerText = `錯誤原因：${this.lastError}`;
-                        modalErr.classList.remove('hidden');
-                    }
-                }
-            }
-
-            async getScores() {
-                let scores = [];
-
-                if (this.isFirebaseReady) {
-                    try {
-                        // Strict Rule 1 Path & Rule 2 Simple Query (Sort in memory)
-                        const colRef = collection(this.db, 'artifacts', this.appId, 'public', 'data', 'leaderboard');
-                        const snap = await getDocs(colRef);
-                        snap.forEach(doc => {
-                            scores.push(doc.data());
-                        });
-                    } catch (e) {
-                        console.error("Error fetching from Firestore, reading local:", e);
-                        scores = this.getLocalScores();
-                    }
-                } else {
-                    scores = this.getLocalScores();
-                }
-
-                // Sort descending by score in JS
-                scores.sort((a, b) => (b.score || 0) - (a.score || 0));
-                return scores;
-            }
-
-            getLocalScores() {
-                try {
-                    const raw = localStorage.getItem(this.LOCAL_STORAGE_KEY);
-                    return raw ? JSON.parse(raw) : this.getDefaultSampleScores();
-                } catch(e) {
-                    return this.getDefaultSampleScores();
-                }
-            }
-
-            getDefaultSampleScores() {
-                return [
-                    { name: "史提夫 (Steve)", diff: "diamond", diffName: "鑽石階", score: 950, date: "2026/09/20" },
-                    { name: "艾莉絲 (Alex)", diff: "iron", diffName: "鐵礦階", score: 820, date: "2026/09/20" },
-                    { name: "村民大師", diff: "dirt", diffName: "泥土階", score: 700, date: "2026/09/19" }
-                ];
-            }
-
-            async addScore(entry) {
-                // Save locally first
-                const local = this.getLocalScores();
-                local.push(entry);
-                local.sort((a, b) => b.score - a.score);
-                try {
-                    localStorage.setItem(this.LOCAL_STORAGE_KEY, JSON.stringify(local.slice(0, 30)));
-                } catch(e){}
-
-                // Try uploading to Firestore if online
-                if (this.isFirebaseReady) {
-                    try {
-                        const colRef = collection(this.db, 'artifacts', this.appId, 'public', 'data', 'leaderboard');
-                        await addDoc(colRef, entry);
-                        return { success: true, mode: 'cloud' };
-                    } catch (err) {
-                        console.error("Firestore upload failed, fallback saved local:", err);
-                        return { success: true, mode: 'local_fallback', error: err.message };
-                    }
-                }
-
-                return { success: true, mode: 'local' };
-            }
+      if (isCloudConnected && db) {
+        try {
+          // 從雲端 Firestore 取出最高分的 5 筆紀錄
+          const q = query(collection(db, "leaderboard"), orderBy("score", "desc"), limit(5));
+          const querySnapshot = await getDocs(q);
+          const cloudData = [];
+          querySnapshot.forEach((doc) => {
+            cloudData.push(doc.data());
+          });
+          
+          if (cloudData.length > 0) {
+            state.leaderboardData = cloudData;
+          } else {
+            fallbackLocalLeaderboard();
+          }
+        } catch (e) {
+          console.error("雲端撈取失敗，切換回本機資料:", e);
+          fallbackLocalLeaderboard();
         }
+      } else {
+        fallbackLocalLeaderboard();
+      }
+      render();
+    };
 
-        const lbManager = new LeaderboardManager();
+    function fallbackLocalLeaderboard() {
+      const local = JSON.parse(localStorage.getItem('mc_chinese_scores') || '[]');
+      state.leaderboardData = local.slice(0, 5);
+    }
 
-        // --- MAIN GAME CONTROLLER ---
-        class GameApp {
-            constructor() {
-                this.currentDiff = 'dirt';
-                this.questions = [];
-                this.currentIndex = 0;
-                this.score = 0;
-                this.lives = 3;
-                this.correctCount = 0;
-                this.activeQuestion = null;
-                this.hasAnswered = false;
-            }
-
-            init() {
-                lbManager.init();
-                this.showScreen('main_menu');
-            }
-
-            showScreen(screenId) {
-                soundFX.playClick();
-                ['screen_main_menu', 'screen_select_difficulty', 'screen_gameplay', 'screen_game_over'].forEach(id => {
-                    const el = document.getElementById(id);
-                    if (el) el.classList.add('hidden');
-                });
-                const target = document.getElementById(`screen_${screenId}`);
-                if (target) target.classList.remove('hidden');
-            }
-
-            startGame(diff) {
-                this.currentDiff = diff;
-                this.questions = [...QUESTIONS[diff]];
-                // Shuffle questions
-                this.questions.sort(() => Math.random() - 0.5);
-                this.currentIndex = 0;
-                this.score = 0;
-                this.lives = 3;
-                this.correctCount = 0;
-
-                this.showScreen('gameplay');
-                this.loadQuestion();
-            }
-
-            loadQuestion() {
-                this.hasAnswered = false;
-                this.activeQuestion = this.questions[this.currentIndex];
-
-                // Update HUD
-                document.getElementById('questionProgress').innerText = `${this.currentIndex + 1}/${this.questions.length}`;
-                document.getElementById('currentScore').innerText = this.score;
-                this.updateHeartsUI();
-
-                const diffNames = { dirt: '🟫 泥土階', iron: '🩶 鐵礦階', diamond: '💎 鑽石階' };
-                document.getElementById('diffTag').innerText = diffNames[this.currentDiff];
-
-                // Sentence with target word highlighted
-                const q = this.activeQuestion;
-                const highlightedSentence = q.sentence.replace(
-                    q.word, 
-                    `<span class="text-yellow-300 font-black underline bg-amber-950/80 px-1 py-0.5 border border-yellow-500">${q.word}</span>`
-                );
-                document.getElementById('sentenceText').innerHTML = highlightedSentence;
-                document.getElementById('targetWordText').innerText = q.word;
-
-                // Render Choices
-                const container = document.getElementById('optionsContainer');
-                container.innerHTML = '';
-
-                const prefixes = ['A', 'B', 'C', 'D'];
-                q.options.forEach((optText, i) => {
-                    const btn = document.createElement('button');
-                    btn.className = `pixel-btn ${this.getBtnStyleByDiff()} p-3.5 text-left text-xs md:text-sm flex items-start gap-2.5 rounded-none w-full`;
-                    btn.innerHTML = `<span class="font-bold pixel-font bg-black/40 px-1.5 py-0.5 text-yellow-300 border border-black">${prefixes[i]}</span> <span>${optText}</span>`;
-                    btn.onclick = () => this.handleAnswer(i);
-                    container.appendChild(btn);
-                });
-            }
-
-            getBtnStyleByDiff() {
-                if (this.currentDiff === 'dirt') return 'btn-dirt';
-                if (this.currentDiff === 'iron') return 'btn-iron';
-                return 'btn-diamond';
-            }
-
-            updateHeartsUI() {
-                const container = document.getElementById('heartsContainer');
-                container.innerHTML = '';
-                for (let i = 0; i < 3; i++) {
-                    const heart = document.createElement('span');
-                    heart.className = `heart-icon ${i < this.lives ? '' : 'empty'}`;
-                    container.appendChild(heart);
-                }
-            }
-
-            handleAnswer(choiceIndex) {
-                if (this.hasAnswered) return;
-                this.hasAnswered = true;
-
-                const q = this.activeQuestion;
-                const isCorrect = choiceIndex === q.answer;
-
-                if (isCorrect) {
-                    soundFX.playCorrect();
-                    const pointVal = this.currentDiff === 'dirt' ? 100 : (this.currentDiff === 'iron' ? 150 : 200);
-                    this.score += pointVal;
-                    this.correctCount++;
-                } else {
-                    soundFX.playWrong();
-                    this.lives--;
-                    const card = document.getElementById('questionCard');
-                    card.classList.add('animate-shake');
-                    setTimeout(() => card.classList.remove('animate-shake'), 500);
-                }
-
-                this.showExplanation(isCorrect, q);
-            }
-
-            showExplanation(isCorrect, q) {
-                const modal = document.getElementById('explanationModal');
-                const header = document.getElementById('resultHeader');
-
-                if (isCorrect) {
-                    header.className = "text-center py-2 text-2xl font-black bg-green-800 text-green-200 border-2 border-black";
-                    header.innerText = "🎉 採礦成功！推論正確！";
-                } else {
-                    header.className = "text-center py-2 text-2xl font-black bg-red-800 text-red-200 border-2 border-black";
-                    header.innerText = "💥 踩到苦力怕！推論錯誤！";
-                }
-
-                document.getElementById('expTargetWord').innerText = q.word;
-                document.getElementById('expCorrectMeaning').innerText = q.options[q.answer];
-                document.getElementById('expClueBefore').innerText = q.clueBefore;
-                document.getElementById('expClueAfter').innerText = q.clueAfter;
-                document.getElementById('expStrategy').innerText = q.strategy;
-
-                modal.classList.remove('hidden');
-            }
-
-            nextQuestion() {
-                soundFX.playClick();
-                document.getElementById('explanationModal').classList.add('hidden');
-
-                if (this.lives <= 0 || this.currentIndex >= this.questions.length - 1) {
-                    this.endGame();
-                } else {
-                    this.currentIndex++;
-                    this.loadQuestion();
-                }
-            }
-
-            endGame() {
-                if (this.lives > 0) {
-                    soundFX.playWin();
-                }
-                this.showScreen('game_over');
-
-                const diffNames = { dirt: '泥土階 (初級)', iron: '鐵礦階 (中級)', diamond: '鑽石階 (高級)' };
-                document.getElementById('resDiff').innerText = diffNames[this.currentDiff];
-                
-                const accuracy = Math.round((this.correctCount / this.questions.length) * 100);
-                document.getElementById('resAccuracy').innerText = `${accuracy}% (${this.correctCount}/${this.questions.length} 題)`;
-                
-                // Hearts bonus
-                const bonus = this.lives * 50;
-                const finalTotal = this.score + bonus;
-                document.getElementById('resFinalScore').innerText = finalTotal;
-                this.finalCalculatedScore = finalTotal;
-
-                const icon = document.getElementById('gameOverIcon');
-                const title = document.getElementById('gameOverTitle');
-                if (this.lives <= 0) {
-                    icon.innerText = "🪨";
-                    title.innerText = "稿子損壞，冒險結束！";
-                } else {
-                    icon.innerText = "🏆";
-                    title.innerText = "成功完成方塊採礦！";
-                }
-
-                document.getElementById('submitNotice').innerText = "";
-                document.getElementById('submitBtn').disabled = false;
-            }
-
-            async submitScore() {
-                const nameInput = document.getElementById('playerNameInput');
-                const name = nameInput.value.trim() || '無名勇者';
-                const btn = document.getElementById('submitBtn');
-                const notice = document.getElementById('submitNotice');
-
-                btn.disabled = true;
-                notice.innerText = "正在傳送紀錄至龍虎榜...";
-
-                const diffNames = { dirt: '泥土階', iron: '鐵礦階', diamond: '鑽石階' };
-                const today = new Date().toLocaleDateString('zh-TW');
-
-                const entry = {
-                    name: name,
-                    diff: this.currentDiff,
-                    diffName: diffNames[this.currentDiff],
-                    score: this.finalCalculatedScore || this.score,
-                    date: today,
-                    timestamp: Date.now()
-                };
-
-                const res = await lbManager.addScore(entry);
-                if (res.mode === 'cloud') {
-                    notice.innerText = "✅ 已成功更新至雲端冒險龍虎榜！";
-                } else {
-                    notice.innerText = "✅ 已儲存至本地龍虎榜！(若要啟用GitHub全網連線，請點選上方連線設定)";
-                }
-
-                soundFX.playCorrect();
-                setTimeout(() => this.openLeaderboard(), 1200);
-            }
-
-            async openLeaderboard() {
-                soundFX.playClick();
-                document.getElementById('leaderboardModal').classList.remove('hidden');
-                this.renderLeaderboard('all');
-            }
-
-            closeLeaderboard() {
-                soundFX.playClick();
-                document.getElementById('leaderboardModal').classList.add('hidden');
-            }
-
-            async renderLeaderboard(filterDiff = 'all') {
-                const listEl = document.getElementById('leaderboardList');
-                listEl.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-gray-400">載入英雄榜資料中...</td></tr>`;
-
-                // Update active tab styles
-                ['all', 'dirt', 'iron', 'diamond'].forEach(d => {
-                    const tab = document.getElementById(`tab_${d}`);
-                    if (tab) {
-                        if (d === filterDiff) {
-                            tab.classList.add('border-2', 'border-white', 'brightness-125');
-                        } else {
-                            tab.classList.remove('border-2', 'border-white', 'brightness-125');
-                        }
-                    }
-                });
-
-                const allScores = await lbManager.getScores();
-                let filtered = allScores;
-                if (filterDiff !== 'all') {
-                    filtered = allScores.filter(s => s.diff === filterDiff);
-                }
-
-                const top5 = filtered.slice(0, 5);
-
-                if (top5.length === 0) {
-                    listEl.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-gray-400">目前尚無此難度的登錄紀錄</td></tr>`;
-                    return;
-                }
-
-                const medals = ['🥇', '🥈', '🥉', '4️⃣', '5️⃣'];
-                listEl.innerHTML = top5.map((s, idx) => `
-                    <tr class="border-b border-gray-800 hover:bg-white/5">
-                        <td class="p-2 font-bold">${medals[idx] || idx + 1}</td>
-                        <td class="p-2 font-bold text-yellow-300">${this.escapeHtml(s.name)}</td>
-                        <td class="p-2"><span class="px-1.5 py-0.5 text-xs bg-gray-800 border border-gray-600">${s.diffName || s.diff}</span></td>
-                        <td class="p-2 text-right font-bold text-green-400 pixel-font">${s.score}</td>
-                        <td class="p-2 text-right text-xs text-gray-400">${s.date || ''}</td>
-                    </tr>
-                `).join('');
-            }
-
-            openGuideModal() {
-                soundFX.playClick();
-                document.getElementById('guideModal').classList.remove('hidden');
-            }
-
-            closeGuideModal() {
-                soundFX.playClick();
-                document.getElementById('guideModal').classList.add('hidden');
-            }
-
-            openFirebaseModal() {
-                soundFX.playClick();
-                document.getElementById('firebaseModal').classList.remove('hidden');
-            }
-
-            closeFirebaseModal() {
-                soundFX.playClick();
-                document.getElementById('firebaseModal').classList.add('hidden');
-            }
-
-            saveCustomFirebaseConfig() {
-                const val = document.getElementById('customConfigInput').value.trim();
-                if (!val) return;
-                try {
-                    JSON.parse(val); // validate json
-                    localStorage.setItem('mc_custom_firebase_config', val);
-                    alert("自訂 Firebase Config 已儲存！頁面將重新載入測試連線。");
-                    location.reload();
-                } catch(e) {
-                    alert("JSON 格式不正確，請確認輸入的資料結構。");
-                }
-            }
-
-            clearCustomFirebaseConfig() {
-                localStorage.removeItem('mc_custom_firebase_config');
-                alert("已清除自訂設定，將重置為預設狀態。");
-                location.reload();
-            }
-
-            escapeHtml(str) {
-                return (str || '').replace(/[&<>"']/g, m => ({
-                    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;'
-                })[m]);
-            }
-        }
-
-        // Initialize Game App Globally
-        const game = new GameApp();
-        window.game = game;
-
-        window.onload = () => {
-            game.init();
-        };
-    </script>
+    // 初始化繪製
+    render();
+  </script>
 </body>
 </html>
